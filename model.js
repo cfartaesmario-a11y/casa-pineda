@@ -149,24 +149,32 @@ export function buildHouse(THREE, mats) {
   const b2cap = slab('PB', BODIES.B2, 0, H.P1, 'garage', 'PB_garaje_cuerpo2');
   add('PB', b2cap, 'terraceFloor', { role: 'terrace' }, 'terraza_cuerpo2');
   // Antepecho de la terraza (cuerpo 2): lados exteriores
-  const par = (a, b) => {
-    const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const g = new THREE.BoxGeometry(len, 0.95, 0.15);
-    g.translate(len / 2, H.P1 + 0.475, 0.075);
-    const m = new THREE.Mesh(g, mats.wall); m.name = 'antepecho';
+  const par = (a, b, hh = 0.95) => {
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const g = new THREE.BoxGeometry(len, hh, 0.15);
+    const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * len, uv.getY(i) * hh);
+    g.translate(len / 2, H.P1 + hh / 2, 0.075);
+    const m = new THREE.Mesh(g, mats.terraceWall || mats.wall); m.name = 'antepecho';
     m.position.set(a[0], 0, -a[1]); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]);
-    m.userData = { mat: 'wall', role: 'terrace' }; levels.PB.add(m);
+    m.userData = { mat: mats.terraceWall ? 'terraceWall' : 'wall', role: 'terrace' }; levels.PB.add(m);
   };
-  par([3.91, 10.64], [-0.27, 10.55]); par([-0.27, 10.55], [-0.18, 6.69]);
-  // Albardilla blanca sobre el antepecho
-  const cop = (a, b) => {
-    const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const g = new THREE.BoxGeometry(len + 0.1, 0.05, 0.25);
-    g.translate(len / 2, H.P1 + 0.975, 0.075); const m = new THREE.Mesh(g, mats.trim); m.name = 'albardilla';
-    m.position.set(a[0], 0, -a[1]); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]); m.userData = { mat: 'trim', role: 'terrace' }; levels.PB.add(m);
+  // Fondo: antepecho bajo con vistas (foto 11). Lado sur: muro alto encalado contra el vecino (foto 12).
+  par([3.91, 10.64], [-0.27, 10.55], 1.0); par([-0.27, 10.55], [-0.18, 6.69], 2.6);
+  // Albardilla de barro sobre los muros
+  const cop = (a, b, hh) => {
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const g = new THREE.BoxGeometry(len + 0.1, 0.045, 0.24);
+    const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * len, uv.getY(i) * 0.24);
+    g.translate(len / 2, H.P1 + hh + 0.022, 0.075); const m = new THREE.Mesh(g, mats.coping || mats.trim); m.name = 'albardilla';
+    m.position.set(a[0], 0, -a[1]); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]); m.userData = { mat: mats.coping ? 'coping' : 'trim', role: 'terrace' }; levels.PB.add(m);
   };
-  cop([3.91, 10.64], [-0.27, 10.55]); cop([-0.27, 10.55], [-0.18, 6.69]);
+  cop([3.91, 10.64], [-0.27, 10.55], 1.0); cop([-0.27, 10.55], [-0.18, 6.69], 2.6);
+  // Sumidero y rodapié de barro al pie de los muros de la terraza
+  { const dg = new THREE.BoxGeometry(0.15, 0.01, 0.15); dg.translate(0.4, H.P1 + 0.005, -10.2); add('PB', dg, 'rail', { role: 'terrace' }, 'sumidero'); }
   // Pérgola metálica con malla de sombreo verde (fotos 11 y 12 del anuncio)
   const PY = H.P1, PH = 2.45, posts = [[0.05, 10.3], [3.65, 10.38], [0.05, 7.0], [3.65, 7.05]];
-  for (const [s, d] of posts) { const pg = new THREE.CylinderGeometry(0.035, 0.035, PH, 10); pg.translate(s, PY + PH / 2, -d); add('PB', pg, 'rail', { role: 'terrace' }, 'poste_pergola'); }
+  for (const [s, d] of posts) {
+    const pg = new THREE.BoxGeometry(0.06, PH, 0.06); pg.translate(s, PY + PH / 2, -d); add('PB', pg, 'rail', { role: 'terrace' }, 'poste_pergola');
+    const fg = new THREE.BoxGeometry(0.16, 0.012, 0.16); fg.translate(s, PY + 0.006, -d); add('PB', fg, 'rail', { role: 'terrace' }, 'pletina');
+  }
   const bar = (a, b, y) => { const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const bg = new THREE.BoxGeometry(len, 0.05, 0.05); bg.translate(len / 2, 0, 0);
     const m = new THREE.Mesh(bg, mats.rail); m.position.set(a[0], y, -a[1]); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]); m.userData = { mat: 'rail', role: 'terrace' }; m.name = 'viga_pergola'; levels.PB.add(m); };
   bar(posts[0], posts[1], PY + PH); bar(posts[2], posts[3], PY + PH); bar(posts[0], posts[2], PY + PH); bar(posts[1], posts[3], PY + PH);
@@ -215,6 +223,11 @@ export function buildHouse(THREE, mats) {
     for (let j = 0; j <= ny; j++) { const y = L.y0 + (L.y1 - L.y0) * j / ny; det('PB', fbox(THREE, L.s0, L.s1, y - 0.03, y + 0.03, 0.08, 0), 'lattice', 'celosia'); }
   }
   det('PB', fbox(THREE, PB.meter.s0, PB.meter.s1, PB.meter.y0, PB.meter.y1, 0.07, 0), 'trim', 'hornacina_contador');
+  // placa del número, aplique sobre el garaje y bajante pluvial
+  det('PB', fbox(THREE, 2.45, 2.65, 2.55, 2.8, 0.015, 0), 'trim', 'placa_numero_1');
+  det('PB', fbox(THREE, 2.535, 2.565, 2.6, 2.75, 0.02, 0), 'door', 'numero_1');
+  det('PB', fbox(THREE, 5.6, 5.75, 3.05, 3.2, 0.12, 0), 'metal', 'aplique');
+  { const dp = new THREE.CylinderGeometry(0.045, 0.045, H.EAVE - 0.1, 12); dp.translate(11.55, (H.EAVE - 0.1) / 2, 0.12); add('PB', dp, 'downpipe', { role: 'detail' }, 'bajante'); }
 
   for (const w of WINDOWS) {
     const { lv, s0, s1, y0, y1 } = w, f = 0.12;
