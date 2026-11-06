@@ -9,14 +9,14 @@ const SOUTH_AT = d => -0.18 * Math.min(1, d / 6.69);
 
 export const P1_ROOMS = [
   { id: 'escalera', name: 'Escalera', floor: 'floorLight', poly: [[0, 0], [2.05, 0], [2.05, 4.4], [SOUTH_AT(4.4), 4.4]] },
-  { id: 'habA', name: 'Habitación 1', floor: 'floorTerracotta', poly: [[2.05, 0], [4.45, 0], [4.45, 2.9], [2.05, 2.9]] },
-  { id: 'salon2', name: 'Salón 2', floor: 'floorLight', poly: [[4.45, 0], [8.65, 0], [8.65, 2.9], [4.45, 2.9]] },
-  { id: 'habC', name: 'Habitación 2', floor: 'floorLight', poly: [[8.65, 0], [11.7, 0], [NORTH_AT(2.9), 2.9], [8.65, 2.9]] },
-  { id: 'pasillo', name: 'Pasillo', floor: 'floorLight', poly: [[2.05, 2.9], [NORTH_AT(2.9), 2.9], [10.84, 3.31], [NORTH_AT(4.4), 4.4], [2.05, 4.4]] },
+  { id: 'habA', name: 'Habitación 1', floor: 'floorTerracotta', poly: [[2.05, 0], [4.62, 0], [4.62, 3.4], [2.05, 3.4]] },
+  { id: 'salon2', name: 'Salón 2', floor: 'floorLight', poly: [[4.62, 0], [8.3, 0], [8.3, 3.4], [4.62, 3.4]] },
+  { id: 'habC', name: 'Habitación 2', floor: 'floorLight', poly: [[8.3, 0], [11.7, 0], [10.84, 3.31], [NORTH_AT(3.4), 3.4], [8.3, 3.4]] },
+  { id: 'pasillo', name: 'Pasillo', floor: 'floorLight', poly: [[2.05, 3.4], [NORTH_AT(3.4), 3.4], [NORTH_AT(4.4), 4.4], [2.05, 4.4]] },
   { id: 'habB', name: 'Habitación 3', floor: 'floorTerracotta', poly: [[SOUTH_AT(4.4), 4.4], [4.05, 4.4], [4.05, 6.77], [-0.18, 6.69]] },
   { id: 'bano', name: 'Baño', floor: 'floorBath', poly: [[4.05, 4.4], [5.6, 4.4], [5.6, 6.85], [4.05, 6.77]] },
   { id: 'cocina', name: 'Cocina', floor: 'floorLight', poly: [[5.6, 4.4], [NORTH_AT(4.4), 4.4], [10.0, 6.54], [NORTH_AT(6.9), 6.9], [5.6, 6.9]] },
-  { id: 'salon1', name: 'Salón con chimenea', floor: 'floorTerracotta', poly: [[4.0, 6.9], [NORTH_AT(6.9), 6.9], [8.85, 10.74], [3.91, 10.64]] },
+  { id: 'salon1', name: 'Salón', floor: 'floorTerracotta', poly: [[4.0, 6.9], [NORTH_AT(6.9), 6.9], [8.85, 10.74], [3.91, 10.64]] },
   { id: 'terraza', name: 'Terraza', floor: 'floorTerracotta', poly: [[-0.18, 6.69], [4.0, 6.77], [3.91, 10.64], [-0.27, 10.55]], outdoor: true },
 ];
 export function polyArea(p) { let a = 0; for (let i = 0; i < p.length; i++) { const [x1, y1] = p[i], [x2, y2] = p[(i + 1) % p.length]; a += x1 * y2 - x2 * y1; } return Math.abs(a) / 2; }
@@ -30,6 +30,7 @@ const WAIN = { mat: 'wainscot', h: 0.95, band: 'wainscotBand' };
 export function buildInteriorP1(THREE, mats) {
   const Y0 = H.P1, HF = H.P2 - H.P1; // 2,90 m entre forjados
   const g = new THREE.Group(); g.name = 'interior_P1';
+  const colliders = []; // segmentos que no se pueden atravesar al pasear (en s, d)
   const tag = (m, mat) => { m.userData = { mat, role: 'interior' }; m.castShadow = m.receiveShadow = true; return m; };
   const meters = (geo, w, h) => { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w, uv.getY(i) * h); return geo; };
   const mesh = (geo, mat, name, parent = g) => { const m = tag(new THREE.Mesh(geo, mats[mat]), mat); m.name = name; parent.add(m); return m; };
@@ -66,9 +67,11 @@ export function buildInteriorP1(THREE, mats) {
     const faces = [];
     if (align !== 'in' || true) faces.push({ side: 'L', z: z0, dir: -1 });
     if (align !== 'in') faces.push({ side: 'R', z: z1, dir: 1 });
+    const ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, nx = uy, ny = -ux; // eje del muro y normal derecha en (s, d)
     const piece = (u0, u1, y0, y1) => {
       if (u1 - u0 < 0.004 || y1 - y0 < 0.004) return;
       slab(u0, u1, y0, y1, z0, z1, 'wallInt');
+      if (y0 < 0.5 && y1 > 0.5) colliders.push({ a: [a[0] + ux * u0 + nx * zc, a[1] + uy * u0 + ny * zc], b: [a[0] + ux * u1 + nx * zc, a[1] + uy * u1 + ny * zc], t });
       if (align === 'in') slab(u0, u1, y0, y1, z1, z1 + 0.015, 'wall'); // revoco de fachada por fuera
       for (const f of faces) {
         const zz = f.z, sk = (th) => f.dir < 0 ? [zz - th, zz] : [zz, zz + th];
@@ -134,11 +137,11 @@ export function buildInteriorP1(THREE, mats) {
   // Tabiques de 10 cm, altura libre 2,60 m
   const T = 0.10, HT = 2.60;
   const pEnd = NORTH_AT(4.4) - 0.2;
-  wall([2.05, 0.25], [2.05, 2.9], T, HT, [], 'center', 'tabique_escalera_hab1');
-  wall([2.05, 2.9], [4.45, 2.9], T, HT, [D(1.3)], 'center', 'tabique_hab1');
-  wall([4.45, 0.25], [4.45, 2.9], T, HT, [], 'center', 'tabique_hab1_salon2');
-  wall([8.65, 0.25], [8.65, 2.9], T, HT, [], 'center', 'tabique_salon2_hab2');
-  wall([8.65, 2.9], [NORTH_AT(2.9) - 0.2, 2.9], T, HT, [D(0.3)], 'center', 'tabique_hab2');
+  wall([2.05, 0.25], [2.05, 3.4], T, HT, [], 'center', 'tabique_escalera_hab1');
+  wall([2.05, 3.4], [4.62, 3.4], T, HT, [D(1.55)], 'center', 'tabique_hab1');
+  wall([4.62, 0.25], [4.62, 3.4], T, HT, [], 'center', 'tabique_hab1_salon2');
+  wall([8.3, 0.25], [8.3, 3.4], T, HT, [], 'center', 'tabique_salon2_hab2');
+  wall([8.3, 3.4], [NORTH_AT(3.4) - 0.2, 3.4], T, HT, [D(0.25)], 'center', 'tabique_hab2');
   wall([0.0, 4.4], [pEnd, 4.4], T, HT, [D(2.8, 0.82, 'out'), D(4.45, 0.72, 'out'), OP(6.3, 1.0)], 'center', 'tabique_pasillo',
     { L: [{ ...BATH, u0: 4.05, u1: 5.6 }, { ...KIT, u0: 5.6 }] });
   wall([4.05, 4.4], [4.05, 6.6], T, HT, [], 'center', 'tabique_hab3_bano', { R: [BATH] });
@@ -176,23 +179,25 @@ export function buildInteriorP1(THREE, mats) {
   for (let s = HOLE.s0 + 0.05; s < HOLE.s1; s += 0.11) box(s - 0.009, s + 0.009, 0, 0.9, HOLE.d0 - 0.03, HOLE.d0 - 0.012, 'railBlack', 'barrote');
   box(HOLE.s0, HOLE.s1 + 0.03, 0.9, 0.945, HOLE.d0 - 0.045, HOLE.d0, 'railBlack', 'pasamanos');
 
-  // ---------------- chimenea de piedra (fotos 1-2) + vigas de madera ----------------
-  const fd1 = 10.66 - T_EXT, fd0 = fd1 - 0.7, fs0 = 6.4, fs1 = 8.1;
-  box(5.0, 8.6, 0.95, 2.6, fd1 - 0.035, fd1, 'stoneWall', 'pared_piedra');
-  box(fs0 - 0.1, fs1 + 0.1, 0, 0.12, fd0 - 0.35, fd1, 'stoneDark', 'chimenea_solera');
-  box(fs0, fs1, 0.12, 0.45, fd0, fd1, 'stone', 'chimenea_base');
-  box(fs0, fs0 + 0.25, 0.45, 1.3, fd0, fd1, 'stone', 'chimenea_lateral');
-  box(fs1 - 0.25, fs1, 0.45, 1.3, fd0, fd1, 'stone', 'chimenea_lateral');
-  box(fs0 + 0.25, fs1 - 0.25, 0.45, 1.3, fd1 - 0.12, fd1 - 0.035, 'fireDark', 'hogar');
-  box(fs0 + 0.25, fs1 - 0.25, 0.45, 0.47, fd0 + 0.05, fd1 - 0.12, 'fireDark', 'hogar_suelo');
-  box(fs0 + 0.3, fs1 - 0.3, 0.47, 0.55, fd0 + 0.25, fd1 - 0.3, 'metal', 'morillos');
-  box(fs0 - 0.08, fs1 + 0.08, 1.3, 1.46, fd0 - 0.08, fd1, 'beam', 'chimenea_repisa');
-  {
-    const hh = HF - 1.46, hgeo = new THREE.CylinderGeometry(0.42, 1.02, hh, 4, 1); hgeo.rotateY(Math.PI / 4); hgeo.scale(1, 1, 0.5);
-    hgeo.translate((fs0 + fs1) / 2, Y0 + 1.46 + hh / 2, -(fd1 - 0.36)); mesh(hgeo, 'stone', 'chimenea_campana');
+  // ---------------- techos (solo al pasear) y luces interiores ----------------
+  const ceil = new THREE.Group(); ceil.name = 'techos'; ceil.visible = false; g.add(ceil);
+  const lights = new THREE.Group(); lights.name = 'luces'; lights.visible = false; g.add(lights);
+  const ceilFlat = (poly, y) => { const m = flat(poly, y, 'ceiling', 'techo'); g.remove(m); ceil.add(m); };
+  for (const r of P1_ROOMS) {
+    if (r.outdoor) continue;
+    if (r.id === 'escalera') { // hueco abierto sobre el tramo que sube a la planta 2
+      ceilFlat([[0, 0], [UP.s0, 0], [UP.s0, 4.4], [SOUTH_AT(4.4), 4.4]], Y0 + HF - 0.02);
+      ceilFlat([[UP.s0, 0], [2.05, 0], [2.05, UP.d0], [UP.s0, UP.d0]], Y0 + HF - 0.02);
+      ceilFlat([[UP.s0, UP.d1], [2.05, UP.d1], [2.05, 4.4], [UP.s0, 4.4]], Y0 + HF - 0.02);
+      continue;
+    }
+    ceilFlat(r.poly, Y0 + HT);
+    const [cs, cd] = centroid(r.poly), pl = new THREE.PointLight(0xffe2b8, 9, 7, 2); pl.position.set(cs, Y0 + HT - 0.25, -cd); lights.add(pl);
+    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.04, 24), mats.lamp); lamp.position.set(cs, Y0 + HT - 0.02, -cd); ceil.add(lamp);
   }
-  const beamEnd = s => Math.min(10.64 - T_EXT, 6.54 + (10.0 - 0.3 - s) * (4.2 / 1.15));
-  for (const s of [4.75, 5.9, 7.05, 8.2]) box(s - 0.075, s + 0.075, HF - 0.36, HF - 0.14, 6.95, beamEnd(s), 'beam', 'viga');
-  box(4.2, 9.9, HF - 0.14, HF - 0.1, 6.95, 7.05, 'beam', 'durmiente');
+  // el hueco de la escalera tampoco se puede cruzar
+  colliders.push({ a: [HOLE.s0, HOLE.d0], b: [HOLE.s1, HOLE.d0], t: 0.05 }, { a: [HOLE.s1 + 0.02, HOLE.d0], b: [HOLE.s1 + 0.02, HOLE.d1], t: 0.05 }, { a: [HOLE.s0, HOLE.d1], b: [HOLE.s1, HOLE.d1], t: 0.05 },
+    { a: [UP.s0, UP.d0], b: [UP.s0, UP.d1], t: 0.05 }, { a: [UP.s0, UP.d1], b: [UP.s1, UP.d1], t: 0.05 });
+  g.userData = { colliders, ceilings: ceil, lights, start: [3.0, 3.9] };
   return g;
 }

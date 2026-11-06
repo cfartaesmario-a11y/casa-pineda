@@ -178,11 +178,28 @@ export function buildHouse(THREE, mats) {
   const bar = (a, b, y) => { const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const bg = new THREE.BoxGeometry(len, 0.05, 0.05); bg.translate(len / 2, 0, 0);
     const m = new THREE.Mesh(bg, mats.rail); m.position.set(a[0], y, -a[1]); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]); m.userData = { mat: 'rail', role: 'terrace' }; m.name = 'viga_pergola'; levels.PB.add(m); };
   bar(posts[0], posts[1], PY + PH); bar(posts[2], posts[3], PY + PH); bar(posts[0], posts[2], PY + PH); bar(posts[1], posts[3], PY + PH);
-  { // malla tensada con una ligera caída en el centro
-    const net = new THREE.PlaneGeometry(3.6, 3.3, 12, 12); net.rotateX(-Math.PI / 2);
-    const p = net.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i) / 1.8, z = p.getZ(i) / 1.65; p.setY(i, -0.12 * (1 - x * x) * (1 - z * z)); }
-    net.computeVertexNormals(); net.translate(1.85, PY + PH - 0.02, -8.69);
-    add('PB', net, 'awning', { role: 'terrace' }, 'malla_sombreo');
+  // Huecos que dan a la terraza, vistos desde fuera (planta 1): ventana de la habitación 3 y ventanal corredero del salón.
+  // segDetail coloca piezas sobre la cara exterior de un muro a→b (s, d); z local positiva = hacia la terraza.
+  const segDetail = (a, b, parts, name) => {
+    const grp = new THREE.Group(); grp.name = name; grp.position.set(a[0], 0, -a[1]); grp.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    for (const [u0, u1, y0, y1, t, mat] of parts) { const bg = new THREE.BoxGeometry(u1 - u0, y1 - y0, t); bg.translate((u0 + u1) / 2, (y0 + y1) / 2, t / 2);
+      const m = new THREE.Mesh(bg, mats[mat]); m.userData = { mat, role: 'detail' }; m.castShadow = m.receiveShadow = true; grp.add(m); }
+    levels.P1.add(grp);
+  };
+  { // ventana habitación 3 (muro del cuerpo 3 hacia la terraza), con persiana y alféizar
+    const y0 = H.P1 + 0.9, y1 = H.P1 + 2.1, u0 = 1.5, u1 = 2.7, f = 0.1;
+    segDetail([4.0, 6.77], [-0.18, 6.69], [
+      [u0, u1, y0, y1, 0.006, 'glass'], [u0 + (u1 - u0) / 2 - 0.025, u0 + (u1 - u0) / 2 + 0.025, y0, y1, 0.04, 'pvc'],
+      [u0, u1, y1 - 0.45, y1, 0.02, 'blind'],
+      [u0 - f, u1 + f, y1, y1 + f, 0.04, 'trim'], [u0 - f, u0, y0, y1, 0.04, 'trim'], [u1, u1 + f, y0, y1, 0.04, 'trim'],
+      [u0 - 0.12, u1 + 0.12, y0 - 0.05, y0, 0.09, 'trim'],
+    ], 'ventana_hab3_exterior');
+  }
+  { // ventanal corredero del salón (muro del cuerpo 1 hacia la terraza)
+    const y0 = H.P1, y1 = H.P1 + 2.15, u0 = 0.8, u1 = 3.1, parts = [[u0, u1, y0, y1, 0.006, 'glass']];
+    for (let k = 0; k <= 3; k++) { const uu = u0 + (u1 - u0) * k / 3; parts.push([uu - 0.03, uu + 0.03, y0, y1, 0.05, 'alu']); }
+    parts.push([u0, u1, y1 - 0.06, y1, 0.05, 'alu'], [u0, u1, y0, y0 + 0.06, 0.05, 'alu'], [u0 - 0.1, u1 + 0.1, y1, y1 + 0.1, 0.04, 'trim']);
+    segDetail([3.91, 10.64], [4.0, 6.77], parts, 'ventanal_salon_exterior');
   }
 
   // --- Planta 1 (vivienda, 95 m²) ---
