@@ -157,9 +157,25 @@ export function buildHouse(THREE, mats) {
     m.userData = { mat: 'wall', role: 'terrace' }; levels.PB.add(m);
   };
   par([3.91, 10.64], [-0.27, 10.55]); par([-0.27, 10.55], [-0.18, 6.69]);
-  // Toldo turquesa visto en Google Earth sobre el cuerpo 2
-  const tg = new THREE.PlaneGeometry(3.1, 2.5); tg.rotateX(-Math.PI / 2 + 0.08); tg.translate(2.15, H.P1 + 2.1, -9.25);
-  add('PB', tg, 'awning', { role: 'terrace' }, 'toldo_turquesa');
+  // Albardilla blanca sobre el antepecho
+  const cop = (a, b) => {
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const g = new THREE.BoxGeometry(len + 0.1, 0.05, 0.25);
+    g.translate(len / 2, H.P1 + 0.975, 0.075); const m = new THREE.Mesh(g, mats.trim); m.name = 'albardilla';
+    m.position.set(a[0], 0, -a[1]); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]); m.userData = { mat: 'trim', role: 'terrace' }; levels.PB.add(m);
+  };
+  cop([3.91, 10.64], [-0.27, 10.55]); cop([-0.27, 10.55], [-0.18, 6.69]);
+  // Pérgola metálica con malla de sombreo verde (fotos 11 y 12 del anuncio)
+  const PY = H.P1, PH = 2.45, posts = [[0.05, 10.3], [3.65, 10.38], [0.05, 7.0], [3.65, 7.05]];
+  for (const [s, d] of posts) { const pg = new THREE.CylinderGeometry(0.035, 0.035, PH, 10); pg.translate(s, PY + PH / 2, -d); add('PB', pg, 'rail', { role: 'terrace' }, 'poste_pergola'); }
+  const bar = (a, b, y) => { const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const bg = new THREE.BoxGeometry(len, 0.05, 0.05); bg.translate(len / 2, 0, 0);
+    const m = new THREE.Mesh(bg, mats.rail); m.position.set(a[0], y, -a[1]); m.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]); m.userData = { mat: 'rail', role: 'terrace' }; m.name = 'viga_pergola'; levels.PB.add(m); };
+  bar(posts[0], posts[1], PY + PH); bar(posts[2], posts[3], PY + PH); bar(posts[0], posts[2], PY + PH); bar(posts[1], posts[3], PY + PH);
+  { // malla tensada con una ligera caída en el centro
+    const net = new THREE.PlaneGeometry(3.6, 3.3, 12, 12); net.rotateX(-Math.PI / 2);
+    const p = net.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i) / 1.8, z = p.getZ(i) / 1.65; p.setY(i, -0.12 * (1 - x * x) * (1 - z * z)); }
+    net.computeVertexNormals(); net.translate(1.85, PY + PH - 0.02, -8.69);
+    add('PB', net, 'awning', { role: 'terrace' }, 'malla_sombreo');
+  }
 
   // --- Planta 1 (vivienda, 95 m²) ---
   for (const k of ['B3', 'B4', 'B1']) slab('P1', BODIES[k], H.P1, H.P2, 'own', `P1_vivienda_${k}`);
@@ -203,6 +219,10 @@ export function buildHouse(THREE, mats) {
   for (const w of WINDOWS) {
     const { lv, s0, s1, y0, y1 } = w, f = 0.12;
     det(lv, fbox(THREE, s0, s1, y0, y1, 0.005, 0.0), 'glass', 'vidrio');
+    // mochetas oscuras: dan profundidad al hueco
+    det(lv, fbox(THREE, s0, s0 + 0.04, y0, y1, 0.02, 0), 'glassDark', 'mocheta');
+    det(lv, fbox(THREE, s1 - 0.04, s1, y0, y1, 0.02, 0), 'glassDark', 'mocheta');
+    det(lv, fbox(THREE, s0, s1, y1 - 0.04, y1, 0.02, 0), 'glassDark', 'mocheta');
     // recercado en relieve
     det(lv, fbox(THREE, s0 - f, s1 + f, y1, y1 + f, 0.05, 0), 'frame', 'recercado');
     det(lv, fbox(THREE, s0 - f, s1 + f, y0 - f, y0, 0.07, 0), 'frame', 'vierteaguas');
@@ -217,25 +237,45 @@ export function buildHouse(THREE, mats) {
   return { root, house, levels };
 }
 
-// ---------------- entorno aproximado ----------------
-export function buildContext(THREE, mats) {
+// ---------------- entorno: solo suelo y calles reales (OpenStreetMap) ----------------
+// roads: [{name, kind, w, pts:[[x,z]...]}] en coordenadas locales del mundo
+export function buildContext(THREE, mats, roads = []) {
   const g = new THREE.Group(); g.name = 'entorno';
-  g.rotation.y = FRAME_ANGLE; g.position.set(FRAME_ORIGIN.x, 0, FRAME_ORIGIN.z);
-  const box = (s0, s1, d0, d1, h, mat, name) => {
-    const geo = new THREE.BoxGeometry(s1 - s0, h, d1 - d0); geo.translate((s0 + s1) / 2, h / 2, -(d0 + d1) / 2);
-    const m = new THREE.Mesh(geo, mats[mat]); m.name = name; m.userData = { mat, role: 'context' }; g.add(m); return m;
-  };
-  const flat = (s0, s1, d0, d1, y, mat, name) => {
-    const geo = new THREE.PlaneGeometry(s1 - s0, d1 - d0); geo.rotateX(-Math.PI / 2); geo.translate((s0 + s1) / 2, y, -(d0 + d1) / 2);
-    const m = new THREE.Mesh(geo, mats[mat]); m.name = name; m.userData = { mat, role: 'context' }; g.add(m); return m;
-  };
-  flat(-30, 40, -30, 30, -0.02, 'ground', 'terreno');
-  flat(-30, 40, -7.6, -1.25, 0.0, 'street', 'calzada');
-  flat(-30, 40, -1.25, 0, 0.12, 'sidewalk', 'acera_ajedrezada');
-  flat(-30, 40, -8.8, -7.6, 0.12, 'sidewalkPlain', 'acera_enfrente');
-  box(-20, 32, -20, -8.8, 7.5, 'neighbor', 'manzana_enfrente_aprox');
-  box(-12, -0.25, 0, 6.5, 4.2, 'neighbor', 'taller_neumaticos_aprox');
-  box(-12, -0.25, 6.5, 14, 10.2, 'shed', 'nave_chapa_blanca_aprox');
-  box(11.75, 20, 0, 11, 9.8, 'neighbor', 'edificio_n3_aprox');
+  const ground = new THREE.PlaneGeometry(260, 260); ground.rotateX(-Math.PI / 2); ground.translate(0, -0.03, 0);
+  const gm = new THREE.Mesh(ground, mats.ground); gm.name = 'terreno'; gm.userData = { mat: 'ground', role: 'context' }; g.add(gm);
+  // cintas de calzada fusionadas en una sola malla por tipo (rápido)
+  const byMat = { street: [], streetMain: [], path: [] };
+  for (const r of roads) {
+    const key = r.kind === 'primary' ? 'streetMain' : (r.kind === 'cycleway' || r.kind === 'steps') ? 'path' : 'street';
+    const hw = r.w / 2, P = byMat[key], y = key === 'path' ? 0.005 : 0.0;
+    for (let i = 0; i < r.pts.length - 1; i++) {
+      const [x1, z1] = r.pts[i], [x2, z2] = r.pts[i + 1], L = Math.hypot(x2 - x1, z2 - z1); if (L < 0.01) continue;
+      const nx = -(z2 - z1) / L * hw, nz = (x2 - x1) / L * hw;
+      P.push(x1 + nx, y, z1 + nz, x1 - nx, y, z1 - nz, x2 + nx, y, z2 + nz, x1 - nx, y, z1 - nz, x2 - nx, y, z2 - nz, x2 + nx, y, z2 + nz);
+    }
+    for (const [x, z] of r.pts) { // juntas redondas en los vértices
+      const n = 14; for (let k = 0; k < n; k++) { const a0 = k / n * Math.PI * 2, a1 = (k + 1) / n * Math.PI * 2; P.push(x, y, z, x + Math.cos(a1) * hw, y, z + Math.sin(a1) * hw, x + Math.cos(a0) * hw, y, z + Math.sin(a0) * hw); }
+    }
+  }
+  for (const [k, arr] of Object.entries(byMat)) {
+    if (!arr.length) continue;
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+    const uv = []; for (let i = 0; i < arr.length; i += 3) uv.push(arr[i] / 4, arr[i + 2] / 4); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, mats[k] || mats.street); m.name = 'calles_' + k; m.userData = { mat: k, role: 'context' }; m.receiveShadow = true; g.add(m);
+  }
+  // acera ajedrezada delante de la casa (en el marco de fachada)
+  const f = new THREE.Group(); f.rotation.y = FRAME_ANGLE; f.position.set(FRAME_ORIGIN.x, 0, FRAME_ORIGIN.z);
+  const sw = new THREE.BoxGeometry(FACADE_LEN + 1.0, 0.14, 1.25); sw.translate(FACADE_LEN / 2, 0.07, 0.625);
+  const swm = new THREE.Mesh(sw, mats.sidewalk); swm.name = 'acera_ajedrezada'; swm.userData = { mat: 'sidewalk', role: 'context' }; swm.receiveShadow = true; f.add(swm);
+  g.add(f);
   return g;
+}
+// Etiquetas: un punto por calle con nombre (el del tramo más largo)
+export function roadLabels(roads) {
+  const best = new Map();
+  for (const r of roads) { if (!r.name) continue; for (let i = 0; i < r.pts.length - 1; i++) {
+    const [x1, z1] = r.pts[i], [x2, z2] = r.pts[i + 1], L = Math.hypot(x2 - x1, z2 - z1);
+    if (!best.has(r.name) || best.get(r.name).L < L) best.set(r.name, { L, x: (x1 + x2) / 2, z: (z1 + z2) / 2 }); } }
+  return [...best].map(([name, v]) => ({ name, x: v.x, z: v.z }));
 }

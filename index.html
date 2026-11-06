@@ -3,112 +3,164 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Casa Pineda · Planos</title>
+<title>Casa Pineda</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{--ink:#16181a;--muted:#62676c;--panel:rgba(255,255,255,.92);--line:rgba(0,0,0,.08);--accent:#1f5fbf;
+  --f:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--m:"IBM Plex Mono",ui-monospace,monospace}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:#dfe6ea;color:var(--ink);font:14px/1.4 var(--f);overflow:hidden}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#labels{position:fixed;inset:0;pointer-events:none}
+.card{position:fixed;left:max(16px,env(safe-area-inset-left));top:max(16px,env(safe-area-inset-top));background:var(--panel);backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:12px;box-shadow:0 6px 24px rgba(0,0,0,.08)}
+.t{font-weight:600;letter-spacing:-.01em}
+.s{font:500 11.5px var(--m);color:var(--muted);margin-top:2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:rgba(0,0,0,.05);border-radius:8px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font:500 13px var(--f);padding:7px 14px;border-radius:6px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hint{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));font:500 11.5px var(--m);color:var(--muted);
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.room{font:600 12px var(--f);color:var(--ink);background:rgba(255,255,255,.9);padding:3px 8px;border-radius:6px;text-align:center;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.room span{display:block;font:500 10.5px var(--m);color:var(--muted)}
+.street{font:600 10.5px var(--f);letter-spacing:.06em;text-transform:uppercase;color:rgba(40,44,48,.55);white-space:nowrap}
+.loading{position:fixed;inset:0;display:grid;place-items:center;font:500 13px var(--m);color:var(--muted)}
+</style>
 </head>
 <body>
-<header class="top">
-  <div class="brand">
-    <span class="mark" aria-hidden="true"></span>
-    <div>
-      <div class="title">Arnau de Vilanova 1</div>
-      <div class="sub">Pineda de Mar · 4389819DG7048N</div>
-    </div>
+<canvas id="c" aria-label="Vista 3D de la casa"></canvas>
+<div id="labels"></div>
+<div class="loading" id="loading">Cargando modelo…</div>
+<div class="card">
+  <div><div class="t">Arnau de Vilanova 1</div><div class="s">Pineda de Mar</div></div>
+  <div class="seg" role="group" aria-label="Vista">
+    <button id="vExt" aria-pressed="true">Exterior</button>
+    <button id="vP1" aria-pressed="false">Planta 1</button>
   </div>
-  <nav class="floors" role="tablist" aria-label="Planta">
-    <button role="tab" data-floor="PB">Planta baja</button>
-    <button role="tab" data-floor="P1">Planta 1</button>
-    <button role="tab" data-floor="P2">Planta 2</button>
-  </nav>
-  <a class="link3d" href="3d/">Modelo 3D</a>
-</header>
+</div>
+<div class="hint">Arrastra para girar · rueda para acercar</div>
 
-<main class="work">
-  <aside class="tools" aria-label="Herramientas">
-    <button class="tool" data-tool="select" title="Seleccionar (V)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z"/></svg><span>Elegir</span></button>
-    <button class="tool" data-tool="wall" title="Muro (W)"><svg viewBox="0 0 24 24"><path d="M4 18L20 6" stroke-width="3"/></svg><span>Muro</span></button>
-    <button class="tool" data-tool="room" title="Habitación (R)"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/></svg><span>Estancia</span></button>
-    <button class="tool" data-tool="door" title="Puerta (D)"><svg viewBox="0 0 24 24"><path d="M5 19h4M5 19V7a12 12 0 0 1 12 12"/></svg><span>Puerta</span></button>
-    <button class="tool" data-tool="window" title="Ventana (N)"><svg viewBox="0 0 24 24"><path d="M3 10h18M3 14h18M3 10v4M21 10v4"/></svg><span>Ventana</span></button>
-    <button class="tool" data-tool="pen" title="Lápiz (P)"><svg viewBox="0 0 24 24"><path d="M4 20c4-1 5-6 8-8s6-1 8-6"/></svg><span>Lápiz</span></button>
-    <button class="tool" data-tool="text" title="Texto (T)"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v13"/></svg><span>Texto</span></button>
-    <hr>
-    <button class="tool" id="undo" title="Deshacer (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5M4 12h11a5 5 0 0 1 0 10h-2"/></svg><span>Deshacer</span></button>
-    <button class="tool" id="redo" title="Rehacer (Ctrl+Y)"><svg viewBox="0 0 24 24"><path d="M15 7l5 5-5 5M20 12H9a5 5 0 0 0 0 10h2"/></svg><span>Rehacer</span></button>
-    <button class="tool" id="del" title="Borrar selección (Supr)"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg><span>Borrar</span></button>
-  </aside>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { buildHouse, buildContext, roadLabels } from './model.js';
+import { buildInteriorP1, P1_ROOMS, polyArea, centroid } from './interior.js';
+import { ROADS } from './roads.js';
 
-  <section class="canvas-wrap">
-    <svg id="plan" aria-label="Plano de la planta" tabindex="0"></svg>
-    <div class="hud" id="hud" hidden></div>
-    <div class="zoom">
-      <button id="zin" aria-label="Acercar">+</button>
-      <button id="zfit" aria-label="Encajar plano">Encajar</button>
-      <button id="zout" aria-label="Alejar">−</button>
-    </div>
-  </section>
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const lr = new CSS2DRenderer({ element: document.getElementById('labels') });
 
-  <aside class="side">
-    <section>
-      <h2 id="floorName">Planta 1</h2>
-      <p class="muted" id="floorNote"></p>
-      <ul class="legend" id="legend"></ul>
-    </section>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xdfe6ea);
+scene.fog = new THREE.Fog(0xdfe6ea, 70, 160);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 600);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 4; controls.maxDistance = 120;
 
-    <section id="inspector" hidden>
-      <h3>Selección</h3>
-      <img id="itemPhoto" class="preview" alt="" hidden>
-      <label class="field" id="nameField"><span>Nombre</span><input id="itemName" type="text" autocomplete="off"></label>
-      <label class="field" id="dirField" hidden><span>Hacia dónde mira la foto</span><input id="itemDir" type="range" min="-180" max="180" step="5" value="90"></label>
-      <dl class="kv" id="itemInfo"></dl>
-    </section>
+scene.add(new THREE.HemisphereLight(0xf2f6ff, 0x9a8a70, 1.0));
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
+sun.position.set(22, 34, 16); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -18, right: 18, top: 18, bottom: -18, near: 1, far: 90 });
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02; scene.add(sun);
 
-    <section>
-      <h3>Fotos del anuncio</h3>
-      <p class="muted">Carga las fotos de la carpeta <span class="mono">fotos-anuncio</span> y arrástralas al plano donde se hicieron (o toca una foto y luego el plano).</p>
-      <input type="file" id="photoFiles" accept="image/*" multiple class="file">
-      <div class="thumbs" id="thumbs"></div>
-    </section>
+// ---------- texturas procedurales ----------
+const rnd = (a, b) => a + Math.random() * (b - a);
+function tex(w, h, draw, rep = [1, 1]) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...rep); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }
+const plaster = (base) => tex(256, 256, (g, w, h) => { g.fillStyle = base; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '90,70,40'},${rnd(.02, .07)})`; g.fillRect(rnd(0, w), rnd(0, h), rnd(1, 3), rnd(1, 3)); } });
+const tileRoof = tex(256, 256, (g, w, h) => { g.fillStyle = '#a9553a'; g.fillRect(0, 0, w, h);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 3; r++) { const x = c * 64, y = r * 102 - (c % 2) * 30, base = `hsl(${rnd(10, 22)},${rnd(42, 55)}%,${rnd(38, 48)}%)`;
+    const gr = g.createLinearGradient(x, 0, x + 64, 0); gr.addColorStop(0, 'rgba(60,20,10,.55)'); gr.addColorStop(.4, base); gr.addColorStop(.6, base); gr.addColorStop(1, 'rgba(60,20,10,.5)');
+    g.fillStyle = gr; g.fillRect(x, y, 64, 110); g.fillStyle = 'rgba(40,15,8,.35)'; g.fillRect(x, y + 100, 64, 4); } });
+const stone = tex(256, 128, (g, w, h) => { g.fillStyle = '#6a5d4f'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 70; i++) { const cx = rnd(0, w), cy = rnd(0, h), r = rnd(10, 24); g.fillStyle = `hsl(${rnd(26, 40)},${rnd(16, 30)}%,${rnd(50, 70)}%)`;
+    g.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + rnd(-.3, .3), rr = r * rnd(.7, 1.1); g.lineTo(cx + Math.cos(a) * rr * 1.4, cy + Math.sin(a) * rr * .8); } g.closePath(); g.fill(); } }, [2, 2]);
+const garage = tex(64, 256, (g, w) => { for (let i = 0; i < 32; i++) { const y = i * 8; g.fillStyle = '#5d6266'; g.fillRect(0, y, w, 8); g.fillStyle = '#7d8388'; g.fillRect(0, y + 1, w, 3); g.fillStyle = '#41464a'; g.fillRect(0, y + 6, w, 2); } });
+const check = tex(64, 64, g => { g.fillStyle = '#efe8df'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#b5463b'; g.fillRect(0, 0, 32, 32); g.fillRect(32, 32, 32, 32); }, [30, 3]);
+const asphalt = tex(128, 128, (g, w, h) => { g.fillStyle = '#5a5c5e'; g.fillRect(0, 0, w, h); for (let i = 0; i < 1400; i++) { g.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '0,0,0'},.07)`; g.fillRect(rnd(0, w), rnd(0, h), 2, 2); } });
+const terracotta = tex(128, 128, (g) => { for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { g.fillStyle = `hsl(${rnd(14, 22)},${rnd(45, 58)}%,${rnd(42, 52)}%)`; g.fillRect(i * 32, j * 32, 32, 32); }
+  g.strokeStyle = 'rgba(235,225,210,.8)'; g.lineWidth = 2; for (let k = 0; k <= 4; k++) { g.beginPath(); g.moveTo(k * 32, 0); g.lineTo(k * 32, 128); g.stroke(); g.beginPath(); g.moveTo(0, k * 32); g.lineTo(128, k * 32); g.stroke(); } }, [0.8, 0.8]);
+const lightTile = tex(128, 128, (g) => { g.fillStyle = '#e4ddd2'; g.fillRect(0, 0, 128, 128); for (let i = 0; i < 300; i++) { g.fillStyle = `rgba(120,100,80,${rnd(.03, .08)})`; g.fillRect(rnd(0, 128), rnd(0, 128), 3, 3); }
+  g.strokeStyle = 'rgba(160,150,140,.6)'; g.lineWidth = 1.5; for (let k = 0; k <= 2; k++) { g.beginPath(); g.moveTo(k * 64, 0); g.lineTo(k * 64, 128); g.stroke(); g.beginPath(); g.moveTo(0, k * 64); g.lineTo(128, k * 64); g.stroke(); } }, [1.1, 1.1]);
+const bathTile = tex(64, 64, (g) => { g.fillStyle = '#d7d9d6'; g.fillRect(0, 0, 64, 64); g.strokeStyle = '#b9bcb8'; g.lineWidth = 1.5; g.strokeRect(0, 0, 32, 32); g.strokeRect(32, 32, 32, 32); g.strokeRect(32, 0, 32, 32); g.strokeRect(0, 32, 32, 32); }, [2.5, 2.5]);
 
-    <section>
-      <h3>Opciones</h3>
-      <label class="field"><span>Grosor de muro</span>
-        <select id="wallW"><option value="0.07">Tabique 7 cm</option><option value="0.10" selected>Tabique 10 cm</option><option value="0.15">Muro 15 cm</option><option value="0.25">Muro de carga 25 cm</option></select>
-      </label>
-      <label class="check"><input type="checkbox" id="snap" checked> Imán a rejilla de 5 cm</label>
-      <label class="check"><input type="checkbox" id="ortho" checked> Ángulos rectos (Mayús para libre)</label>
-    </section>
+const M = o => new THREE.MeshStandardMaterial({ roughness: .85, metalness: 0, side: THREE.DoubleSide, ...o });
+const mats = {
+  wall: M({ map: plaster('#e2c38c') }), roof: M({ map: tileRoof, roughness: .9 }), trim: M({ color: 0xf2eadb }),
+  stone: M({ map: stone }), door: M({ color: 0x33373a, roughness: .45 }), frosted: M({ color: 0xdfe7ea, roughness: .15 }),
+  garage: M({ map: garage, metalness: .45, roughness: .45 }), jamb: M({ color: 0xd6a59a }), lattice: M({ color: 0xc49470 }),
+  glassDark: M({ color: 0x26292c }), glass: M({ color: 0x6d8796, roughness: .05, metalness: .5 }), frame: M({ color: 0xdcbb8c }),
+  pvc: M({ color: 0xf6f6f2, roughness: .4 }), blind: M({ color: 0xedeeea }), shutter: M({ color: 0x6b3f25 }),
+  terraceFloor: M({ map: terracotta }), awning: M({ color: 0x2fae86, transparent: true, opacity: .78 }), rail: M({ color: 0x3a3f44, metalness: .6, roughness: .4 }),
+  ground: M({ color: 0xcfcabd }), street: M({ map: asphalt }), streetMain: M({ map: asphalt, color: 0xd8d8d8 }), path: M({ color: 0xc7bfb2 }),
+  sidewalk: M({ map: check }),
+  wallInt: M({ color: 0xf4f1ea }), floorLight: M({ map: lightTile }), floorTerracotta: M({ map: terracotta }), floorBath: M({ map: bathTile }),
+  glassIn: M({ color: 0xa9c6d6, transparent: true, opacity: .35, roughness: .05 }), doorLeaf: M({ color: 0xa8784a, roughness: .6 }),
+  step: M({ color: 0xd9d4ca, roughness: .5 }), fireDark: M({ color: 0x1a1612 }), beam: M({ color: 0x6e4a2c, roughness: .8 }),
+};
 
-    <section>
-      <h3>Calco de tu boceto</h3>
-      <p class="muted">Carga la foto de tu dibujo y ajústala encima del plano.</p>
-      <input type="file" id="refFile" accept="image/*" class="file">
-      <div id="refCtl" hidden>
-        <label class="field"><span>Opacidad</span><input type="range" id="refOp" min="0" max="1" step="0.05" value="0.5"></label>
-        <label class="field"><span>Escala</span><input type="range" id="refScale" min="0.2" max="3" step="0.01" value="1"></label>
-        <label class="field"><span>Giro</span><input type="range" id="refRot" min="-180" max="180" step="0.5" value="0"></label>
-        <label class="field"><span>Desplazar X</span><input type="range" id="refX" min="-8" max="8" step="0.05" value="0"></label>
-        <label class="field"><span>Desplazar Y</span><input type="range" id="refY" min="-8" max="8" step="0.05" value="0"></label>
-        <button class="btn ghost" id="refClear">Quitar calco</button>
-      </div>
-    </section>
+// ---------- escena ----------
+const { root, house, levels } = buildHouse(THREE, mats);
+const ctx = buildContext(THREE, mats, ROADS);
+const interior = buildInteriorP1(THREE, mats);
+house.add(interior);
+scene.add(ctx, root);
+root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
 
-    <section>
-      <h3>Guardar y enviar</h3>
-      <div class="btns">
-        <button class="btn" id="expPng">Descargar PNG</button>
-        <button class="btn" id="expJson">Descargar JSON</button>
-        <button class="btn" id="copyJson">Copiar para Claude</button>
-        <label class="btn ghost">Importar JSON<input type="file" id="impJson" accept="application/json" hidden></label>
-      </div>
-      <p class="muted small" id="saveState">Se guarda solo en este navegador.</p>
-      <button class="btn danger ghost" id="clearFloor">Vaciar esta planta</button>
-    </section>
-  </aside>
-</main>
-<script type="module" src="app.js"></script>
+// etiquetas de calles
+for (const l of roadLabels(ROADS)) { const el = document.createElement('div'); el.className = 'street'; el.textContent = l.name; const o = new CSS2DObject(el); o.position.set(l.x, 0.3, l.z); scene.add(o); }
+// etiquetas de estancias
+const roomLabels = new THREE.Group(); house.add(roomLabels);
+for (const r of P1_ROOMS) {
+  const [s, d] = centroid(r.poly), el = document.createElement('div'); el.className = 'room';
+  el.innerHTML = `${r.name}<span>≈ ${polyArea(r.poly).toFixed(1).replace('.', ',')} m²</span>`;
+  const o = new CSS2DObject(el); o.position.set(s, 3.4 + 1.2, -d); roomLabels.add(o);
+}
+
+// ---------- vistas ----------
+house.updateMatrixWorld(true);
+const W = (s, y, d) => house.localToWorld(new THREE.Vector3(s, y, -d));
+const VIEWS = { ext: [W(24, 15, -24), W(5.5, 4.2, 4)], p1: [W(13, 19, -9), W(5.6, 3.4, 5.2)] };
+let mode = 'ext';
+function setMode(m, instant) {
+  mode = m;
+  const p1 = m === 'p1';
+  levels.P2.visible = !p1; levels.CUB.visible = !p1;
+  levels.P1.children.forEach(o => { if (o.userData.slab) o.visible = !p1; });
+  interior.visible = p1;
+  roomLabels.children.forEach(o => { o.visible = p1; o.element.style.display = p1 ? '' : 'none'; });
+  document.getElementById('vExt').setAttribute('aria-pressed', !p1);
+  document.getElementById('vP1').setAttribute('aria-pressed', p1);
+  fly(...VIEWS[m], instant);
+}
+function fly(pos, tgt, instant) {
+  if (instant || matchMedia('(prefers-reduced-motion: reduce)').matches) { camera.position.copy(pos); controls.target.copy(tgt); controls.update(); return; }
+  const p0 = camera.position.clone(), t0 = controls.target.clone(), st = performance.now();
+  (function step(now) { const k = Math.min(1, (now - st) / 800), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+    camera.position.lerpVectors(p0, pos, e); controls.target.lerpVectors(t0, tgt, e); controls.update(); if (k < 1) requestAnimationFrame(step); })(st);
+}
+document.getElementById('vExt').onclick = () => setMode('ext');
+document.getElementById('vP1').onclick = () => setMode('p1');
+const start = location.hash === '#planta1' ? 'p1' : 'ext';
+
+function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); lr.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+setMode(start, true);
+document.getElementById('loading').remove();
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); lr.render(scene, camera); });
+</script>
 </body>
 </html>

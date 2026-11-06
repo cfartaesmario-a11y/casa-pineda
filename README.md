@@ -1,22 +1,23 @@
 # Casa Pineda
 
-Planos y modelo 3D de la vivienda de C/ Arnau de Vilanova 1, Pineda de Mar (ref. catastral 4389819DG7048N).
+Vista 3D de la vivienda de C/ Arnau de Vilanova 1, Pineda de Mar (ref. catastral 4389819DG7048N).
 
-- **Planos** (`index.html`): editor por plantas sobre el contorno oficial del Catastro. Permite dibujar muros, estancias (con m²), puertas, ventanas, texto y trazo libre; calcar una foto de un boceto; y colocar en el plano las fotos del anuncio arrastrándolas.
-- **Modelo 3D** (`3d/`): exterior con los 4 cuerpos del Catastro, la cubierta vista en Google Earth y la fachada. Incluye `3d/export/casa_pineda.glb` y `.obj` para Blender o SketchUp.
+Web: https://cfartaesmario-a11y.github.io/casa-pineda/ · Exterior y Planta 1 por dentro (`#planta1`).
 
-## Origen de las medidas
+## Origen de los datos
 
 | Dato | Fuente |
 |---|---|
-| Contorno de la parcela y de los 4 cuerpos, ancho de fachada 11,70 m | Catastro (INSPIRE, EPSG:25831) |
-| Forma de la cubierta, terraza del cuerpo 2 | Google Earth 3D |
-| Alturas de plantas y huecos de fachada | Estimadas a partir de fotos (± 10 cm) |
+| Contorno de la parcela y de los 4 cuerpos, fachada de 11,70 m | Catastro (INSPIRE, EPSG:25831) |
+| Forma de la cubierta y terraza con malla de sombreo | Google Earth 3D y fotos del anuncio |
+| Distribución de la planta 1 | Boceto del propietario, ajustado a las ventanas de fachada |
+| Alturas y huecos | Estimados a partir de fotos (± 10 cm) |
+| Calles | OpenStreetMap (© colaboradores de OpenStreetMap, ODbL) |
 
-Las fotos del anuncio no están en el repositorio: se cargan desde tu ordenador y no salen del navegador.
+`export/casa_pineda.glb` y `.obj` sirven para Blender o SketchUp.
 
-## Uso
+## Archivos
 
-Abre la página publicada o sirve la carpeta con cualquier servidor estático (`python -m http.server`). Los dibujos se guardan en el navegador; usa «Descargar JSON» para tener una copia o enviarla.
-
-Atajos: `V` elegir · `W` muro · `R` estancia · `D` puerta · `N` ventana · `P` lápiz · `T` texto · `F` invertir puerta · `Supr` borrar · `Ctrl+Z` / `Ctrl+Y` · `Espacio` + arrastrar para mover el plano · rueda para zoom.
+- `model.js`: exterior (cuerpos, fachada, cubierta, terraza) y entorno de calles.
+- `interior.js`: estancias, tabiques, puertas, escalera y chimenea de la planta 1.
+- `roads.js`: calles de alrededor.
