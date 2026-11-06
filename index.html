@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Casa Pineda · Planos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <div>
+      <div class="title">Arnau de Vilanova 1</div>
+      <div class="sub">Pineda de Mar · 4389819DG7048N</div>
+    </div>
+  </div>
+  <nav class="floors" role="tablist" aria-label="Planta">
+    <button role="tab" data-floor="PB">Planta baja</button>
+    <button role="tab" data-floor="P1">Planta 1</button>
+    <button role="tab" data-floor="P2">Planta 2</button>
+  </nav>
+  <a class="link3d" href="3d/">Modelo 3D</a>
+</header>
+
+<main class="work">
+  <aside class="tools" aria-label="Herramientas">
+    <button class="tool" data-tool="select" title="Seleccionar (V)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z"/></svg><span>Elegir</span></button>
+    <button class="tool" data-tool="wall" title="Muro (W)"><svg viewBox="0 0 24 24"><path d="M4 18L20 6" stroke-width="3"/></svg><span>Muro</span></button>
+    <button class="tool" data-tool="room" title="Habitación (R)"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/></svg><span>Estancia</span></button>
+    <button class="tool" data-tool="door" title="Puerta (D)"><svg viewBox="0 0 24 24"><path d="M5 19h4M5 19V7a12 12 0 0 1 12 12"/></svg><span>Puerta</span></button>
+    <button class="tool" data-tool="window" title="Ventana (N)"><svg viewBox="0 0 24 24"><path d="M3 10h18M3 14h18M3 10v4M21 10v4"/></svg><span>Ventana</span></button>
+    <button class="tool" data-tool="pen" title="Lápiz (P)"><svg viewBox="0 0 24 24"><path d="M4 20c4-1 5-6 8-8s6-1 8-6"/></svg><span>Lápiz</span></button>
+    <button class="tool" data-tool="text" title="Texto (T)"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v13"/></svg><span>Texto</span></button>
+    <hr>
+    <button class="tool" id="undo" title="Deshacer (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5M4 12h11a5 5 0 0 1 0 10h-2"/></svg><span>Deshacer</span></button>
+    <button class="tool" id="redo" title="Rehacer (Ctrl+Y)"><svg viewBox="0 0 24 24"><path d="M15 7l5 5-5 5M20 12H9a5 5 0 0 0 0 10h2"/></svg><span>Rehacer</span></button>
+    <button class="tool" id="del" title="Borrar selección (Supr)"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg><span>Borrar</span></button>
+  </aside>
+
+  <section class="canvas-wrap">
+    <svg id="plan" aria-label="Plano de la planta" tabindex="0"></svg>
+    <div class="hud" id="hud" hidden></div>
+    <div class="zoom">
+      <button id="zin" aria-label="Acercar">+</button>
+      <button id="zfit" aria-label="Encajar plano">Encajar</button>
+      <button id="zout" aria-label="Alejar">−</button>
+    </div>
+  </section>
+
+  <aside class="side">
+    <section>
+      <h2 id="floorName">Planta 1</h2>
+      <p class="muted" id="floorNote"></p>
+      <ul class="legend" id="legend"></ul>
+    </section>
+
+    <section id="inspector" hidden>
+      <h3>Selección</h3>
+      <img id="itemPhoto" class="preview" alt="" hidden>
+      <label class="field" id="nameField"><span>Nombre</span><input id="itemName" type="text" autocomplete="off"></label>
+      <label class="field" id="dirField" hidden><span>Hacia dónde mira la foto</span><input id="itemDir" type="range" min="-180" max="180" step="5" value="90"></label>
+      <dl class="kv" id="itemInfo"></dl>
+    </section>
+
+    <section>
+      <h3>Fotos del anuncio</h3>
+      <p class="muted">Carga las fotos de la carpeta <span class="mono">fotos-anuncio</span> y arrástralas al plano donde se hicieron (o toca una foto y luego el plano).</p>
+      <input type="file" id="photoFiles" accept="image/*" multiple class="file">
+      <div class="thumbs" id="thumbs"></div>
+    </section>
+
+    <section>
+      <h3>Opciones</h3>
+      <label class="field"><span>Grosor de muro</span>
+        <select id="wallW"><option value="0.07">Tabique 7 cm</option><option value="0.10" selected>Tabique 10 cm</option><option value="0.15">Muro 15 cm</option><option value="0.25">Muro de carga 25 cm</option></select>
+      </label>
+      <label class="check"><input type="checkbox" id="snap" checked> Imán a rejilla de 5 cm</label>
+      <label class="check"><input type="checkbox" id="ortho" checked> Ángulos rectos (Mayús para libre)</label>
+    </section>
+
+    <section>
+      <h3>Calco de tu boceto</h3>
+      <p class="muted">Carga la foto de tu dibujo y ajústala encima del plano.</p>
+      <input type="file" id="refFile" accept="image/*" class="file">
+      <div id="refCtl" hidden>
+        <label class="field"><span>Opacidad</span><input type="range" id="refOp" min="0" max="1" step="0.05" value="0.5"></label>
+        <label class="field"><span>Escala</span><input type="range" id="refScale" min="0.2" max="3" step="0.01" value="1"></label>
+        <label class="field"><span>Giro</span><input type="range" id="refRot" min="-180" max="180" step="0.5" value="0"></label>
+        <label class="field"><span>Desplazar X</span><input type="range" id="refX" min="-8" max="8" step="0.05" value="0"></label>
+        <label class="field"><span>Desplazar Y</span><input type="range" id="refY" min="-8" max="8" step="0.05" value="0"></label>
+        <button class="btn ghost" id="refClear">Quitar calco</button>
+      </div>
+    </section>
+
+    <section>
+      <h3>Guardar y enviar</h3>
+      <div class="btns">
+        <button class="btn" id="expPng">Descargar PNG</button>
+        <button class="btn" id="expJson">Descargar JSON</button>
+        <button class="btn" id="copyJson">Copiar para Claude</button>
+        <label class="btn ghost">Importar JSON<input type="file" id="impJson" accept="application/json" hidden></label>
+      </div>
+      <p class="muted small" id="saveState">Se guarda solo en este navegador.</p>
+      <button class="btn danger ghost" id="clearFloor">Vaciar esta planta</button>
+    </section>
+  </aside>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
