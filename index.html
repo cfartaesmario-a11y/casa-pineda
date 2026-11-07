@@ -189,6 +189,14 @@ const mats = {
   step: M({ color: 0xd9d4ca, roughness: .5 }), fireDark: M({ color: 0x1a1612 }), beam: M({ color: 0x6e4a2c, roughness: .8 }),
 };
 
+// Propuesta de reforma (?colores=reforma): fachada gris, recercados y zócalo antracita, persianas negras
+if (new URLSearchParams(location.search).get('colores') === 'reforma') {
+  mats.wall.map = plaster('#a3a6a8'); mats.wall.needsUpdate = true;
+  for (const k of ['frame', 'jamb', 'lattice']) mats[k].color.set(0x2c2e31);
+  for (const k of ['blind', 'shutter', 'door']) mats[k].color.set(0x141516);
+  mats.stone.map = null; mats.stone.color.set(0x34363a); mats.stone.needsUpdate = true;
+  mats.pvc.color.set(0x1d1e20);
+}
 // ---------- escena ----------
 const { root, house, levels } = buildHouse(THREE, mats);
 const ctx = buildContext(THREE, mats, ROADS);
