@@ -33,11 +33,11 @@ export function roofH(d) {
 // ---- Huecos de fachada (desde la esquina sur, en metros; estimados a partir de la foto 03) ----
 export const WINDOWS = [
   { lv: 'P1', s0: 2.40, s1: 3.60, y0: 4.30, y1: 5.60, pers: 0.0 },
-  { lv: 'P1', s0: 4.70, s1: 6.00, y0: 4.30, y1: 5.60, pers: 0.45 },
+  { lv: 'P1', s0: 5.30, s1: 6.60, y0: 4.30, y1: 5.60, pers: 0.45 },
   { lv: 'P1', s0: 7.30, s1: 8.20, y0: 4.20, y1: 5.60, pers: 0.75 },
   { lv: 'P1', s0: 9.50, s1: 10.40, y0: 4.20, y1: 5.50, pers: 0.35 },
   { lv: 'P2', s0: 2.40, s1: 3.60, y0: 7.20, y1: 8.50, pers: 0.0 },
-  { lv: 'P2', s0: 4.60, s1: 5.90, y0: 7.20, y1: 8.50, pers: 0.12, shutter: true },
+  { lv: 'P2', s0: 5.20, s1: 6.50, y0: 7.20, y1: 8.50, pers: 0.12, shutter: true },
   { lv: 'P2', s0: 7.00, s1: 8.40, y0: 7.00, y1: 8.55, pers: 0.55 },
   { lv: 'P2', s0: 8.50, s1: 10.10, y0: 7.00, y1: 8.55, pers: 0.55 },
 ];
@@ -180,11 +180,11 @@ export function buildHouse(THREE, mats) {
   bar(posts[0], posts[1], PY + PH); bar(posts[2], posts[3], PY + PH); bar(posts[0], posts[2], PY + PH); bar(posts[1], posts[3], PY + PH);
   // Huecos que dan a la terraza, vistos desde fuera (planta 1): ventana de la habitación 3 y ventanal corredero del salón.
   // segDetail coloca piezas sobre la cara exterior de un muro a→b (s, d); z local positiva = hacia la terraza.
-  const segDetail = (a, b, parts, name) => {
+  const segDetail = (a, b, parts, name, lv = 'P1') => {
     const grp = new THREE.Group(); grp.name = name; grp.position.set(a[0], 0, -a[1]); grp.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]);
     for (const [u0, u1, y0, y1, t, mat] of parts) { const bg = new THREE.BoxGeometry(u1 - u0, y1 - y0, t); bg.translate((u0 + u1) / 2, (y0 + y1) / 2, t / 2);
       const m = new THREE.Mesh(bg, mats[mat]); m.userData = { mat, role: 'detail' }; m.castShadow = m.receiveShadow = true; grp.add(m); }
-    levels.P1.add(grp);
+    levels[lv].add(grp);
   };
   { // ventana habitación 3 (muro del cuerpo 3 hacia la terraza), con persiana y alféizar
     const y0 = H.P1 + 0.9, y1 = H.P1 + 2.1, u0 = 1.5, u1 = 2.7, f = 0.1;
@@ -200,6 +200,13 @@ export function buildHouse(THREE, mats) {
     for (let k = 0; k <= 3; k++) { const uu = u0 + (u1 - u0) * k / 3; parts.push([uu - 0.03, uu + 0.03, y0, y1, 0.05, 'alu']); }
     parts.push([u0, u1, y1 - 0.06, y1, 0.05, 'alu'], [u0, u1, y0, y0 + 0.06, 0.05, 'alu'], [u0 - 0.1, u1 + 0.1, y1, y1 + 0.1, 0.04, 'trim']);
     segDetail([3.91, 10.64], [4.0, 6.77], parts, 'ventanal_salon_exterior');
+  }
+  { // planta 2: ventana corredera de 2 hojas del salón grande y ventana de la habitación 4, ambas sobre la terraza
+    const y0 = H.P2 + 0.9, y1 = H.P2 + 2.1, f = 0.1;
+    const win = (u0, u1, mid) => [[u0, u1, y0, y1, 0.006, 'glass'], [mid - 0.03, mid + 0.03, y0, y1, 0.05, 'alu'],
+      [u0 - f, u1 + f, y1, y1 + f, 0.04, 'trim'], [u0 - f, u0, y0, y1, 0.04, 'trim'], [u1, u1 + f, y0, y1, 0.04, 'trim'], [u0 - 0.12, u1 + 0.12, y0 - 0.05, y0, 0.09, 'trim'], [u0, u1, y1 - 0.3, y1, 0.02, 'blind']];
+    segDetail([3.91, 10.64], [4.0, 6.77], win(1.0, 2.5, 1.75), 'ventana_salon_P2_exterior', 'P2');
+    segDetail([4.0, 6.77], [-0.18, 6.69], win(1.5, 2.7, 2.1), 'ventana_hab4_exterior', 'P2');
   }
 
   // --- Planta 1 (vivienda, 95 m²) ---

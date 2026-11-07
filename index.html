@@ -8,31 +8,34 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-:root{--ink:#16181a;--muted:#62676c;--panel:rgba(255,255,255,.92);--line:rgba(0,0,0,.08);--accent:#1f5fbf;
+:root{--ink:#16181a;--muted:#62676c;--panel:rgba(255,255,255,.92);--line:rgba(0,0,0,.08);--accent:#1f5fbf;--danger:#c8463c;
   --f:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--m:"IBM Plex Mono",ui-monospace,monospace}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%;margin:0;background:#dfe6ea;color:var(--ink);font:14px/1.4 var(--f);overflow:hidden}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
 #labels{position:fixed;inset:0;pointer-events:none}
 .card{position:fixed;left:max(16px,env(safe-area-inset-left));top:max(16px,env(safe-area-inset-top));background:var(--panel);backdrop-filter:blur(10px);
-  border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:12px;box-shadow:0 6px 24px rgba(0,0,0,.08)}
+  border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:12px;box-shadow:0 6px 24px rgba(0,0,0,.08);max-width:calc(100vw - 32px)}
 .t{font-weight:600;letter-spacing:-.01em}
 .s{font:500 11.5px var(--m);color:var(--muted);margin-top:2px}
-.pad{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);display:grid;grid-template-columns:repeat(3,52px);gap:6px}
-.pad button{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-size:18px;color:var(--ink);cursor:pointer;touch-action:none;user-select:none}
-.pad button{grid-row:2}
-.pad button[data-k="f"]{grid-column:2;grid-row:1}
-[hidden]{display:none!important}
-.seg{display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(0,0,0,.05);border-radius:8px;padding:3px;gap:2px}
-.seg button{border:0;background:transparent;font:500 13px var(--f);padding:7px 14px;border-radius:6px;cursor:pointer;color:var(--muted)}
+.seg{display:grid;grid-template-columns:repeat(4,auto);background:rgba(0,0,0,.05);border-radius:8px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font:500 13px var(--f);padding:7px 12px;border-radius:6px;cursor:pointer;color:var(--muted);white-space:nowrap}
 .seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.tools button{border:1px solid var(--line);background:#fff;font:500 12.5px var(--f);padding:6px 10px;border-radius:7px;cursor:pointer;color:var(--ink)}
+.tools button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .hint{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));font:500 11.5px var(--m);color:var(--muted);
-  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:min(560px,calc(100vw - 32px))}
+.pad{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);display:grid;grid-template-columns:repeat(3,52px);gap:6px}
+.pad button{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-size:18px;color:var(--ink);cursor:pointer;touch-action:none;user-select:none;grid-row:2}
+.pad button[data-k="f"]{grid-column:2;grid-row:1}
 .room{font:600 12px var(--f);color:var(--ink);background:rgba(255,255,255,.9);padding:3px 8px;border-radius:6px;text-align:center;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .room span{display:block;font:500 10.5px var(--m);color:var(--muted)}
 .street{font:600 10.5px var(--f);letter-spacing:.06em;text-transform:uppercase;color:rgba(40,44,48,.55);white-space:nowrap}
 .loading{position:fixed;inset:0;display:grid;place-items:center;font:500 13px var(--m);color:var(--muted)}
+@media (max-width:560px){.seg{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -42,9 +45,15 @@ html,body{height:100%;margin:0;background:#dfe6ea;color:var(--ink);font:14px/1.4
 <div class="card">
   <div><div class="t">Arnau de Vilanova 1</div><div class="s">Pineda de Mar</div></div>
   <div class="seg" role="group" aria-label="Vista">
-    <button id="vExt" aria-pressed="true">Exterior</button>
-    <button id="vP1" aria-pressed="false">Planta 1</button>
-    <button id="vWalk" aria-pressed="false">Pasear</button>
+    <button data-mode="ext" aria-pressed="true">Exterior</button>
+    <button data-mode="P1" aria-pressed="false">Planta 1</button>
+    <button data-mode="P2" aria-pressed="false">Planta 2</button>
+    <button data-mode="walk" aria-pressed="false">Pasear</button>
+  </div>
+  <div class="tools" id="editTools" hidden>
+    <button id="bEdit" aria-pressed="false">Editar paredes</button>
+    <button id="bUndo">Deshacer</button>
+    <button id="bReset">Restablecer</button>
   </div>
 </div>
 <div class="hint" id="hint">Arrastra para girar · rueda para acercar</div>
@@ -60,8 +69,8 @@ html,body{height:100%;margin:0;background:#dfe6ea;color:var(--ink);font:14px/1.4
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-import { buildHouse, buildContext, roadLabels } from './model.js';
-import { buildInteriorP1, P1_ROOMS, polyArea, centroid } from './interior.js';
+import { buildHouse, buildContext, roadLabels, H } from './model.js';
+import { DEFAULT_LAYOUT, buildLevel, buildStairs, stairHeight, STAIR_COLLIDERS } from './interior.js';
 import { ROADS } from './roads.js';
 
 const canvas = document.getElementById('c');
@@ -179,38 +188,71 @@ const mats = {
 // ---------- escena ----------
 const { root, house, levels } = buildHouse(THREE, mats);
 const ctx = buildContext(THREE, mats, ROADS);
-const interior = buildInteriorP1(THREE, mats);
-house.add(interior);
 scene.add(ctx, root);
 root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+house.updateMatrixWorld(true);
+const LY = { P1: H.P1, P2: H.P2 };
+let dirty = 2; const markDirty = () => { dirty = 2; };
 
 // etiquetas de calles
 const streetLabels = [];
 for (const l of roadLabels(ROADS)) { const el = document.createElement('div'); el.className = 'street'; el.textContent = l.name; const o = new CSS2DObject(el); o.position.set(l.x, 0.3, l.z); scene.add(o); streetLabels.push(o); }
-// etiquetas de estancias
-const roomLabels = new THREE.Group(); house.add(roomLabels);
-for (const r of P1_ROOMS) {
-  const [s, d] = centroid(r.poly), el = document.createElement('div'); el.className = 'room';
-  el.innerHTML = `${r.name}<span>≈ ${polyArea(r.poly).toFixed(1).replace('.', ',')} m²</span>`;
-  const o = new CSS2DObject(el); o.position.set(s, 3.4 + 1.2, -d); roomLabels.add(o);
+
+// ---------- interior: distribución editable (se guarda en este navegador) ----------
+const LKEY = 'casa-pineda-paredes-v2';
+const clone = o => JSON.parse(JSON.stringify(o));
+const layout = clone(DEFAULT_LAYOUT);
+try { const s = JSON.parse(localStorage.getItem(LKEY)); if (s && s.P1 && s.P2) { layout.P1.walls = s.P1; layout.P2.walls = s.P2; } } catch {}
+const saveLayout = () => { try { localStorage.setItem(LKEY, JSON.stringify({ P1: layout.P1.walls, P2: layout.P2.walls })); } catch {} };
+const interiorRoot = new THREE.Group(); interiorRoot.name = 'interior'; house.add(interiorRoot);
+const stairs = buildStairs(THREE, mats); interiorRoot.add(stairs);
+stairs.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+const built = {};
+const roomLabels = { P1: new THREE.Group(), P2: new THREE.Group() };
+house.add(roomLabels.P1, roomLabels.P2);
+function disposeGroup(g) { g.traverse(o => { if (o.isMesh) o.geometry.dispose(); }); }
+function rebuild(level) {
+  if (built[level]) { interiorRoot.remove(built[level].group); disposeGroup(built[level].group); }
+  const b = buildLevel(THREE, mats, level, layout[level]); built[level] = b; interiorRoot.add(b.group);
+  b.group.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+  if (!roomLabels[level].children.length) for (const l of b.labels) {
+    const el = document.createElement('div'); el.className = 'room'; el.innerHTML = `${l.name}<span>≈ ${l.area.toFixed(1).replace('.', ',')} m²</span>`;
+    const o = new CSS2DObject(el); o.position.set(l.at[0], l.y + 1.3, -l.at[1]); roomLabels[level].add(o);
+  }
+  applyVisibility(); markDirty();
 }
 
-// ---------- vistas ----------
-house.updateMatrixWorld(true);
-const W = (s, y, d) => house.localToWorld(new THREE.Vector3(s, y, -d));
-const VIEWS = { ext: [W(24, 15, -24), W(5.5, 4.2, 4)], p1: [W(13, 19, -9), W(5.6, 3.4, 5.2)] };
-let mode = 'ext';
-// ---------- paseo en primera persona ----------
-const EYE = 1.62, RADIUS = 0.24, SPEED = 1.5;
-const walk = { s: 3, d: 3.9, yaw: 0, pitch: -0.05, keys: new Set(), drag: null };
-const hint = document.getElementById('hint'), pad = document.getElementById('pad');
-function walkCamera() {
-  const y = 3.4 + EYE, cp = Math.cos(walk.pitch);
-  camera.position.copy(house.localToWorld(new THREE.Vector3(walk.s, y, -walk.d)));
-  camera.lookAt(house.localToWorld(new THREE.Vector3(walk.s + Math.cos(walk.yaw) * cp, y + Math.sin(walk.pitch), -(walk.d + Math.sin(walk.yaw) * cp))));
+// ---------- personaje (tercera persona) ----------
+function makeCharacter() {
+  const g = new THREE.Group(); g.name = 'personaje';
+  const C = c => new THREE.MeshStandardMaterial({ color: c, roughness: .7 });
+  const skin = C(0xd9a98a), shirt = C(0x2f5f8f), pants = C(0x2b3038), shoe = C(0x1b1b1b), hair = C(0x3a2a1e);
+  const cap = (r, l, m) => new THREE.Mesh(new THREE.CapsuleGeometry(r, l, 6, 14), m);
+  const torso = cap(0.17, 0.36, shirt); torso.position.y = 1.2; torso.scale.set(1, 1, 0.72); g.add(torso);
+  const hips = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.16, 0.22), pants); hips.position.y = 0.95; g.add(hips);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.055, 0.1, 12), skin); neck.position.y = 1.5; g.add(neck);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.115, 24, 18), skin); head.position.y = 1.64; head.scale.set(0.95, 1.08, 0.95); g.add(head);
+  const hr = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.55), hair); hr.position.set(-0.012, 1.665, 0); hr.rotation.z = 0.2; g.add(hr);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 6), skin); nose.position.set(0.115, 1.63, 0); g.add(nose);
+  const limb = (x, y, z, r, l, m, footM) => { const p = new THREE.Group(); p.position.set(x, y, z); const c = cap(r, l, m); c.position.y = -(l / 2 + r); p.add(c);
+    if (footM) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.07, 0.1), footM); f.position.set(0.05, -(l + 2 * r) + 0.03, 0); p.add(f); }
+    else { const hd = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), skin); hd.position.y = -(l + 2 * r) + 0.02; p.add(hd); }
+    g.add(p); return p; };
+  const legL = limb(0, 0.92, 0.09, 0.07, 0.7, pants, shoe), legR = limb(0, 0.92, -0.09, 0.07, 0.7, pants, shoe);
+  const armL = limb(0, 1.43, 0.23, 0.05, 0.5, shirt), armR = limb(0, 1.43, -0.23, 0.05, 0.5, shirt);
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  return { g, legL, legR, armL, armR };
 }
-function collide() {
-  for (let it = 0; it < 3; it++) for (const c of interior.userData.colliders) {
+const hero = makeCharacter(); hero.g.visible = false; house.add(hero.g);
+const walk = { s: 3.2, d: 3.55, y: H.P1, face: 0, camYaw: 0, camPitch: 0.35, dist: 2.6, keys: new Set(), drag: null, phase: 0 };
+const RADIUS = 0.22;
+function collidersHere() {
+  if (stairHeight(walk.s, walk.d) !== null) return STAIR_COLLIDERS;
+  const lv = walk.y > (H.P1 + H.P2) / 2 ? 'P2' : 'P1';
+  return built[lv].colliders;
+}
+function collide(cols) {
+  for (let it = 0; it < 3; it++) for (const c of cols) {
     const [ax, ay] = c.a, [bx, by] = c.b, dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1;
     const k = Math.max(0, Math.min(1, ((walk.s - ax) * dx + (walk.d - ay) * dy) / L2)), qx = ax + k * dx, qy = ay + k * dy;
     const ex = walk.s - qx, ey = walk.d - qy, dist = Math.hypot(ex, ey), R = RADIUS + c.t / 2;
@@ -218,65 +260,162 @@ function collide() {
   }
 }
 function walkStep(dt) {
-  const K = walk.keys; let f = 0, st = 0, turn = 0;
+  const K = walk.keys; let f = 0, st = 0;
   if (K.has('w') || K.has('arrowup') || K.has('f')) f += 1;
   if (K.has('s') || K.has('arrowdown') || K.has('b')) f -= 1;
   if (K.has('a')) st -= 1; if (K.has('d')) st += 1;
-  if (K.has('arrowleft') || K.has('l')) turn += 1; if (K.has('arrowright') || K.has('r')) turn -= 1;
-  if (!f && !st && !turn) return false;
-  walk.yaw += turn * 1.8 * dt;
-  const cx = Math.cos(walk.yaw), cy = Math.sin(walk.yaw);
-  walk.s += (cx * f + cy * st) * SPEED * dt; walk.d += (cy * f - cx * st) * SPEED * dt;
-  collide(); return true;
+  if (K.has('arrowleft') || K.has('l')) walk.camYaw += 1.8 * dt;
+  if (K.has('arrowright') || K.has('r')) walk.camYaw -= 1.8 * dt;
+  const moving = f || st;
+  if (moving) {
+    const speed = K.has('shift') ? 2.6 : 1.4, cx = Math.cos(walk.camYaw), cy = Math.sin(walk.camYaw);
+    let vs = cx * f + cy * st, vd = cy * f - cx * st; const n = Math.hypot(vs, vd); vs /= n; vd /= n;
+    const prevS = walk.s, prevD = walk.d;
+    walk.s += vs * speed * dt; walk.d += vd * speed * dt;
+    collide(collidersHere());
+    const sh = stairHeight(walk.s, walk.d);
+    walk.y = sh !== null ? sh : (walk.y > (H.P1 + H.P2) / 2 ? H.P2 : H.P1);
+    const target = Math.atan2(vd, vs); let dA = target - walk.face; dA = Math.atan2(Math.sin(dA), Math.cos(dA)); walk.face += dA * Math.min(1, dt * 10);
+    walk.phase += dt * speed * 5.2;
+    if (Math.hypot(walk.s - prevS, walk.d - prevD) < 1e-4) walk.phase *= 0.9;
+  } else walk.phase *= 0.8;
+  const sw = Math.sin(walk.phase) * (moving ? 0.55 : 0);
+  hero.legL.rotation.z = sw; hero.legR.rotation.z = -sw; hero.armL.rotation.z = -sw * 0.8; hero.armR.rotation.z = sw * 0.8;
+  hero.g.position.set(walk.s, walk.y, -walk.d); hero.g.rotation.y = walk.face;
 }
-addEventListener('keydown', e => { if (mode !== 'walk') return; const k = e.key.toLowerCase(); if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { walk.keys.add(k); e.preventDefault(); } });
+
+const ray = new THREE.Raycaster();
+function walkCamera() {
+  const tgtL = new THREE.Vector3(walk.s, walk.y + 1.5, -walk.d), cp = Math.cos(walk.camPitch);
+  const camL = new THREE.Vector3(walk.s - Math.cos(walk.camYaw) * cp * walk.dist, walk.y + 1.5 + Math.sin(walk.camPitch) * walk.dist, -(walk.d - Math.sin(walk.camYaw) * cp * walk.dist));
+  const tgt = house.localToWorld(tgtL.clone()), cam = house.localToWorld(camL.clone()), dir = cam.clone().sub(tgt), len = dir.length(); dir.normalize();
+  ray.set(tgt, dir); ray.far = len;
+  const hit = ray.intersectObjects([built.P1.group, built.P2.group, stairs], true).find(h => h.object.visible && h.object.parent.visible && !h.object.parent.userData.isLeaf && h.object.material && !h.object.material.transparent);
+  const L = hit ? Math.max(0.25, hit.distance - 0.15) : len;
+  camera.position.copy(tgt).addScaledVector(dir, L); camera.lookAt(tgt);
+  hero.g.visible = L > 0.55;
+}
+
+// ---------- modos de vista ----------
+const hint = document.getElementById('hint'), pad = document.getElementById('pad'), editTools = document.getElementById('editTools'), bEdit = document.getElementById('bEdit');
+const W = (s, y, d) => house.localToWorld(new THREE.Vector3(s, y, -d));
+const VIEWS = { ext: [W(24, 15, -24), W(5.5, 4.2, 4)], P1: [W(13, 19, -9), W(5.6, H.P1, 5.2)], P2: [W(13, 22, -9), W(5.6, H.P2, 5.2)] };
+let mode = 'ext', editing = false;
+function applyVisibility() {
+  const walkM = mode === 'walk', inside = mode !== 'ext';
+  interiorRoot.visible = inside;
+  if (built.P1) { built.P1.group.visible = inside; built.P1.ceil.visible = walkM; built.P1.lights.visible = walkM; }
+  if (built.P2) { built.P2.group.visible = mode === 'P2' || walkM; built.P2.ceil.visible = walkM; built.P2.lights.visible = walkM; }
+  levels.P1.children.forEach(o => { if (o.userData.slab) o.visible = !inside; });
+  levels.P2.children.forEach(o => { if (o.userData.slab) o.visible = mode === 'ext' || mode === 'P1'; });
+  levels.P2.visible = mode !== 'P1';
+  levels.CUB.visible = mode === 'ext' || walkM;
+  for (const lv of ['P1', 'P2']) roomLabels[lv].children.forEach(o => { const v = mode === lv; o.visible = v; o.element.style.display = v ? '' : 'none'; });
+  for (const o of streetLabels) { o.visible = !walkM; o.element.style.display = walkM ? 'none' : ''; }
+  hero.g.visible = walkM;
+}
+function setMode(m, instant) {
+  const wasWalk = mode === 'walk';
+  mode = m; editing = false; bEdit.setAttribute('aria-pressed', 'false');
+  document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === m));
+  const walkM = m === 'walk';
+  controls.enabled = !walkM; pad.hidden = !walkM; editTools.hidden = !(m === 'P1' || m === 'P2');
+  camera.fov = walkM ? 60 : 38; camera.updateProjectionMatrix();
+  applyVisibility(); updateHint();
+  if (walkM) { if (!walk.started) { walk.started = true; } walkStep(0); walkCamera(); markDirty(); return; }
+  fly(...VIEWS[m], instant && !wasWalk);
+}
+function updateHint() {
+  hint.textContent = mode === 'walk' ? 'W A S D para andar · Mayús para correr · arrastra para girar la cámara · rueda para acercar · sube por la escalera a la planta 2'
+    : editing ? 'Arrastra una pared para moverla · clic derecho para borrarla · Mayús + arrastrar en el suelo para dibujar una pared nueva'
+    : 'Arrastra para girar · rueda para acercar';
+}
+function fly(pos, tgt, instant) {
+  if (instant || matchMedia('(prefers-reduced-motion: reduce)').matches) { camera.position.copy(pos); controls.target.copy(tgt); controls.update(); markDirty(); return; }
+  const p0 = camera.position.clone(), t0 = controls.target.clone(), st = performance.now();
+  (function step(now) { const k = Math.min(1, (now - st) / 800), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+    camera.position.lerpVectors(p0, pos, e); controls.target.lerpVectors(t0, tgt, e); controls.update(); markDirty(); if (k < 1) requestAnimationFrame(step); })(st);
+}
+document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
+// ---------- editor de paredes ----------
+const undoStack = [];
+const pushUndo = lv => { undoStack.push({ lv, walls: clone(layout[lv].walls) }); if (undoStack.length > 80) undoStack.shift(); };
+bEdit.onclick = () => { editing = !editing; bEdit.setAttribute('aria-pressed', editing); updateHint(); };
+document.getElementById('bUndo').onclick = () => { const u = undoStack.pop(); if (!u) return; layout[u.lv].walls = u.walls; saveLayout(); rebuild(u.lv); };
+const bReset = document.getElementById('bReset');
+bReset.onclick = () => {
+  if (!bReset.dataset.armed) { bReset.dataset.armed = 1; bReset.textContent = '¿Seguro? Pulsa otra vez'; setTimeout(() => { delete bReset.dataset.armed; bReset.textContent = 'Restablecer'; }, 3000); return; }
+  delete bReset.dataset.armed; bReset.textContent = 'Restablecer';
+  for (const lv of ['P1', 'P2']) { pushUndo(lv); layout[lv].walls = clone(DEFAULT_LAYOUT[lv].walls); rebuild(lv); } saveLayout();
+};
+const ndc = new THREE.Vector2(), plane = new THREE.Plane();
+function pointerLocal(e, y) { // punto del suelo (s, d) bajo el ratón a la altura y
+  const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera); ray.far = Infinity; plane.set(new THREE.Vector3(0, 1, 0), -y);
+  const p = new THREE.Vector3(); if (!ray.ray.intersectPlane(plane, p)) return null; house.worldToLocal(p); return [p.x, -p.z];
+}
+function wallUnder(e) {
+  const lv = mode, r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera); ray.far = Infinity;
+  const hit = ray.intersectObjects(built[lv].wallGroups, true)[0]; if (!hit) return null;
+  let o = hit.object; while (o && o.userData.wallIndex === undefined) o = o.parent; return o ? o.userData.wallIndex : null;
+}
+const snap = v => Math.round(v / 0.05) * 0.05;
+let drag = null, rebuildQueued = false;
+const queueRebuild = lv => { if (rebuildQueued) return; rebuildQueued = true; requestAnimationFrame(() => { rebuildQueued = false; rebuild(lv); }); };
+canvas.addEventListener('contextmenu', e => { if (editing) e.preventDefault(); });
+canvas.addEventListener('pointerdown', e => {
+  if (!editing || (mode !== 'P1' && mode !== 'P2')) return;
+  const lv = mode, y = LY[lv] + 1.0;
+  const idx = wallUnder(e);
+  if (e.button === 2) { if (idx !== null) { e.stopImmediatePropagation(); pushUndo(lv); layout[lv].walls.splice(idx, 1); saveLayout(); rebuild(lv); } return; }
+  if (e.button !== 0) return;
+  const p = pointerLocal(e, y); if (!p) return;
+  if (e.shiftKey) { // pared nueva
+    e.stopImmediatePropagation(); pushUndo(lv);
+    const a = [snap(p[0]), snap(p[1])]; layout[lv].walls.push({ a, b: [a[0] + 0.05, a[1]] });
+    drag = { lv, kind: 'new', i: layout[lv].walls.length - 1, a }; canvas.setPointerCapture(e.pointerId); controls.enabled = false; return;
+  }
+  if (idx === null) return;
+  e.stopImmediatePropagation(); pushUndo(lv);
+  const w = layout[lv].walls[idx], L = Math.hypot(w.b[0] - w.a[0], w.b[1] - w.a[1]), n = [-(w.b[1] - w.a[1]) / L, (w.b[0] - w.a[0]) / L];
+  const near = (q, r) => Math.hypot(q[0] - r[0], q[1] - r[1]) < 0.08;
+  const linked = []; layout[lv].walls.forEach((o, j) => { if (j === idx) return; for (const k of ['a', 'b']) if (near(o[k], w.a) || near(o[k], w.b)) linked.push([j, k, o[k].slice()]); });
+  drag = { lv, kind: 'move', i: idx, start: p, a: w.a.slice(), b: w.b.slice(), n, linked };
+  canvas.setPointerCapture(e.pointerId); controls.enabled = false;
+}, { capture: true });
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return; const p = pointerLocal(e, LY[drag.lv] + 1.0); if (!p) return;
+  const walls = layout[drag.lv].walls;
+  if (drag.kind === 'new') { let b = [snap(p[0]), snap(p[1])]; const dx = b[0] - drag.a[0], dy = b[1] - drag.a[1]; if (!e.altKey) { if (Math.abs(dx) > Math.abs(dy)) b[1] = drag.a[1]; else b[0] = drag.a[0]; } walls[drag.i].b = b; hint.textContent = `Pared nueva: ${Math.hypot(b[0] - drag.a[0], b[1] - drag.a[1]).toFixed(2).replace('.', ',')} m`; }
+  else {
+    const delta = snap((p[0] - drag.start[0]) * drag.n[0] + (p[1] - drag.start[1]) * drag.n[1]), ox = drag.n[0] * delta, oy = drag.n[1] * delta;
+    walls[drag.i].a = [drag.a[0] + ox, drag.a[1] + oy]; walls[drag.i].b = [drag.b[0] + ox, drag.b[1] + oy];
+    for (const [j, k, orig] of drag.linked) walls[j][k] = [orig[0] + ox, orig[1] + oy];
+    hint.textContent = `Moviendo pared ${delta >= 0 ? '+' : ''}${delta.toFixed(2).replace('.', ',')} m`;
+  }
+  queueRebuild(drag.lv);
+});
+canvas.addEventListener('pointerup', () => {
+  if (!drag) return; const lv = drag.lv, w = layout[lv].walls[drag.i];
+  if (drag.kind === 'new' && Math.hypot(w.b[0] - w.a[0], w.b[1] - w.a[1]) < 0.2) layout[lv].walls.splice(drag.i, 1);
+  drag = null; controls.enabled = true; saveLayout(); rebuild(lv); updateHint();
+});
+
+// ---------- control del paseo ----------
+addEventListener('keydown', e => { if (mode !== 'walk') return; const k = e.key.toLowerCase(); if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'shift'].includes(k)) { walk.keys.add(k); e.preventDefault(); } });
 addEventListener('keyup', e => walk.keys.delete(e.key.toLowerCase()));
+addEventListener('blur', () => walk.keys.clear());
 canvas.addEventListener('pointerdown', e => { if (mode === 'walk') { walk.drag = [e.clientX, e.clientY]; canvas.setPointerCapture(e.pointerId); } });
 canvas.addEventListener('pointermove', e => { if (mode !== 'walk' || !walk.drag) return;
-  walk.yaw -= (e.clientX - walk.drag[0]) * 0.004; walk.pitch = Math.max(-1.2, Math.min(1.2, walk.pitch - (e.clientY - walk.drag[1]) * 0.004)); walk.drag = [e.clientX, e.clientY]; dirty = 2; });
+  walk.camYaw -= (e.clientX - walk.drag[0]) * 0.005; walk.camPitch = Math.max(-0.25, Math.min(1.2, walk.camPitch + (e.clientY - walk.drag[1]) * 0.004)); walk.drag = [e.clientX, e.clientY]; });
 canvas.addEventListener('pointerup', () => { walk.drag = null; });
+canvas.addEventListener('wheel', e => { if (mode === 'walk') { walk.dist = Math.max(0.3, Math.min(5, walk.dist * (e.deltaY > 0 ? 1.12 : 0.89))); e.preventDefault(); } }, { passive: false });
 for (const b of pad.querySelectorAll('button')) {
   b.addEventListener('pointerdown', e => { e.preventDefault(); walk.keys.add(b.dataset.k); });
   for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, () => walk.keys.delete(b.dataset.k));
 }
-function setMode(m, instant) {
-  const wasWalk = mode === 'walk';
-  mode = m;
-  const isWalk = m === 'walk', p1 = m === 'p1' || isWalk;
-  interior.userData.ceilings.visible = isWalk; interior.userData.lights.visible = isWalk;
-  controls.enabled = !isWalk; pad.hidden = !isWalk;
-  for (const o of streetLabels) { o.visible = !isWalk; o.element.style.display = isWalk ? 'none' : ''; }
-  hint.textContent = isWalk ? 'W A S D o flechas para andar · arrastra para mirar' : 'Arrastra para girar · rueda para acercar';
-  document.getElementById('vWalk').setAttribute('aria-pressed', isWalk);
-  camera.fov = isWalk ? 68 : 38; camera.updateProjectionMatrix();
-  if (isWalk) {
-    [walk.s, walk.d] = interior.userData.start; walk.yaw = 0; walk.pitch = -0.05;
-    levels.P2.visible = false; levels.CUB.visible = false;
-    levels.P1.children.forEach(o => { if (o.userData.slab) o.visible = false; });
-    interior.visible = true;
-    roomLabels.children.forEach(o => { o.visible = false; o.element.style.display = 'none'; });
-    document.getElementById('vExt').setAttribute('aria-pressed', false); document.getElementById('vP1').setAttribute('aria-pressed', false);
-    walkCamera(); dirty = 2; return;
-  }
-  if (wasWalk) instant = false;
-  levels.P2.visible = !p1; levels.CUB.visible = !p1;
-  levels.P1.children.forEach(o => { if (o.userData.slab) o.visible = !p1; });
-  interior.visible = p1;
-  roomLabels.children.forEach(o => { o.visible = p1; o.element.style.display = p1 ? '' : 'none'; });
-  document.getElementById('vExt').setAttribute('aria-pressed', !p1);
-  document.getElementById('vP1').setAttribute('aria-pressed', p1);
-  fly(...VIEWS[m], instant);
-}
-function fly(pos, tgt, instant) {
-  if (instant || matchMedia('(prefers-reduced-motion: reduce)').matches) { camera.position.copy(pos); controls.target.copy(tgt); controls.update(); return; }
-  const p0 = camera.position.clone(), t0 = controls.target.clone(), st = performance.now();
-  (function step(now) { const k = Math.min(1, (now - st) / 800), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
-    camera.position.lerpVectors(p0, pos, e); controls.target.lerpVectors(t0, tgt, e); controls.update(); if (k < 1) requestAnimationFrame(step); })(st);
-}
-document.getElementById('vExt').onclick = () => setMode('ext');
-document.getElementById('vP1').onclick = () => setMode('p1');
-document.getElementById('vWalk').onclick = () => setMode('walk');
-const start = location.hash === '#planta1' ? 'p1' : 'ext';
 
 // sombras de contacto en las esquinas (oclusión ambiental). Si el equipo no puede, se dibuja sin ella.
 let composer = null;
@@ -292,18 +431,17 @@ try {
   composer.addPass(new OutputPass());
 } catch (e) { composer = null; }
 
-function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); composer?.setSize(w, h); lr.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); composer?.setSize(w, h); lr.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); markDirty(); }
 addEventListener('resize', resize); resize();
-setMode(start, true);
+rebuild('P1'); rebuild('P2');
+const startMode = { '#planta1': 'P1', '#planta2': 'P2', '#pasear': 'walk' }[location.hash] || 'ext';
+setMode(startMode, true);
 document.getElementById('loading').remove();
-// solo se redibuja cuando algo cambia: menos consumo y sin tirones
-let dirty = 2; controls.addEventListener('change', () => { dirty = 2; });
-const markDirty = () => { dirty = 2; };
-document.getElementById('vExt').addEventListener('click', markDirty); document.getElementById('vP1').addEventListener('click', markDirty); addEventListener('resize', markDirty);
+controls.addEventListener('change', markDirty);
 let last = performance.now();
 renderer.setAnimationLoop(() => {
   const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
-  if (mode === 'walk') { if (walkStep(dt) || walk.drag) dirty = 2; walkCamera(); }
+  if (mode === 'walk') { walkStep(dt); walkCamera(); dirty = 1; }
   else controls.update();
   if (dirty <= 0) return; dirty--;
   if (composer) composer.render(); else renderer.render(scene, camera);
