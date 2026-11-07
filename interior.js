@@ -1,7 +1,7 @@
 // INTERIOR — plantas 1 y 2 según el boceto del propietario (7 nov 2026), con el contorno del Catastro y las fotos
 // del anuncio. Coordenadas en el marco de fachada (s, d) en metros: s a lo largo de la fachada desde la esquina sur,
 // d hacia dentro. Vértice 3D local = (s, y, -d). Las paredes interiores son DATOS editables (ver DEFAULT_LAYOUT).
-import { H, WINDOWS, roofH } from './model.js';
+import { H, WINDOWS, roofH } from './model.js?v=202611071155';
 
 export const NORTH_AT = d => d <= 3.31 ? 11.7 - d * (0.86 / 3.31) : d <= 6.54 ? 10.84 - (d - 3.31) * (0.84 / 3.23) : 10.0 - (d - 6.54) * (1.15 / 4.2);
 const SOUTH_AT = d => -0.18 * Math.min(1, d / 6.69);

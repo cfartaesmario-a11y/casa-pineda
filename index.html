@@ -42,6 +42,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <canvas id="c" aria-label="Vista 3D de la casa"></canvas>
 <div id="labels"></div>
 <div class="loading" id="loading">Cargando modelo…</div>
+<script>
+// Si algo falla al cargar, se avisa en vez de quedarse en «Cargando…»
+addEventListener('error', function (e) { var l = document.getElementById('loading'); if (l) l.textContent = 'No se pudo cargar el modelo. Recarga la página con Ctrl+F5.'; }, true);
+</script>
 <div class="card">
   <div><div class="t">Arnau de Vilanova 1</div><div class="s">Pineda de Mar</div></div>
   <div class="seg" role="group" aria-label="Vista">
@@ -69,9 +73,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-import { buildHouse, buildContext, roadLabels, H } from './model.js';
-import { DEFAULT_LAYOUT, buildLevel, buildStairs, stairHeight, STAIR_COLLIDERS } from './interior.js';
-import { ROADS } from './roads.js';
+import { buildHouse, buildContext, roadLabels, H } from './model.js?v=202611071155';
+import { DEFAULT_LAYOUT, buildLevel, buildStairs, stairHeight, STAIR_COLLIDERS } from './interior.js?v=202611071155';
+import { ROADS } from './roads.js?v=202611071155';
 
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
