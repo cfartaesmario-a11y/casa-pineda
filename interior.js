@@ -9,10 +9,11 @@ const SOUTH_AT = d => -0.18 * Math.min(1, d / 6.69);
 
 export const P1_ROOMS = [
   { id: 'escalera', name: 'Escalera', floor: 'floorLight', poly: [[0, 0], [2.05, 0], [2.05, 4.4], [SOUTH_AT(4.4), 4.4]] },
-  { id: 'habA', name: 'Habitación 1', floor: 'floorTerracotta', poly: [[2.05, 0], [4.62, 0], [4.62, 3.4], [2.05, 3.4]] },
-  { id: 'salon2', name: 'Salón 2', floor: 'floorLight', poly: [[4.62, 0], [8.3, 0], [8.3, 3.4], [4.62, 3.4]] },
-  { id: 'habC', name: 'Habitación 2', floor: 'floorLight', poly: [[8.3, 0], [11.7, 0], [10.84, 3.31], [NORTH_AT(3.4), 3.4], [8.3, 3.4]] },
-  { id: 'pasillo', name: 'Pasillo', floor: 'floorLight', poly: [[2.05, 3.4], [NORTH_AT(3.4), 3.4], [NORTH_AT(4.4), 4.4], [2.05, 4.4]] },
+  // Habitaciones 1 y 2 grandes (caben dos camas de matrimonio, fotos 8-9); el salón 2 queda pequeño y abierto al pasillo
+  { id: 'habA', name: 'Habitación 1', floor: 'floorTerracotta', poly: [[2.05, 0], [6.2, 0], [6.2, 3.4], [2.05, 3.4]] },
+  { id: 'salon2', name: 'Salón 2', floor: 'floorLight', poly: [[6.2, 0], [8.25, 0], [8.25, 3.4], [6.2, 3.4]] },
+  { id: 'habC', name: 'Habitación 2', floor: 'floorLight', poly: [[8.25, 0], [11.7, 0], [10.84, 3.31], [NORTH_AT(4.4), 4.4], [8.25, 4.4]] },
+  { id: 'pasillo', name: 'Pasillo', floor: 'floorLight', poly: [[2.05, 3.4], [8.25, 3.4], [8.25, 4.4], [2.05, 4.4]] },
   { id: 'habB', name: 'Habitación 3', floor: 'floorTerracotta', poly: [[SOUTH_AT(4.4), 4.4], [4.05, 4.4], [4.05, 6.77], [-0.18, 6.69]] },
   { id: 'bano', name: 'Baño', floor: 'floorBath', poly: [[4.05, 4.4], [5.6, 4.4], [5.6, 6.85], [4.05, 6.77]] },
   { id: 'cocina', name: 'Cocina', floor: 'floorLight', poly: [[5.6, 4.4], [NORTH_AT(4.4), 4.4], [10.0, 6.54], [NORTH_AT(6.9), 6.9], [5.6, 6.9]] },
@@ -138,10 +139,9 @@ export function buildInteriorP1(THREE, mats) {
   const T = 0.10, HT = 2.60;
   const pEnd = NORTH_AT(4.4) - 0.2;
   wall([2.05, 0.25], [2.05, 3.4], T, HT, [], 'center', 'tabique_escalera_hab1');
-  wall([2.05, 3.4], [4.62, 3.4], T, HT, [D(1.55)], 'center', 'tabique_hab1');
-  wall([4.62, 0.25], [4.62, 3.4], T, HT, [], 'center', 'tabique_hab1_salon2');
-  wall([8.3, 0.25], [8.3, 3.4], T, HT, [], 'center', 'tabique_salon2_hab2');
-  wall([8.3, 3.4], [NORTH_AT(3.4) - 0.2, 3.4], T, HT, [D(0.25)], 'center', 'tabique_hab2');
+  wall([2.05, 3.4], [6.2, 3.4], T, HT, [D(3.05)], 'center', 'tabique_hab1');
+  wall([6.2, 0.25], [6.2, 3.4], T, HT, [], 'center', 'tabique_hab1_salon2');
+  wall([8.25, 0.25], [8.25, 4.4], T, HT, [D(3.5, 0.8, 'out')], 'center', 'tabique_salon2_hab2');
   wall([0.0, 4.4], [pEnd, 4.4], T, HT, [D(2.8, 0.82, 'out'), D(4.45, 0.72, 'out'), OP(6.3, 1.0)], 'center', 'tabique_pasillo',
     { L: [{ ...BATH, u0: 4.05, u1: 5.6 }, { ...KIT, u0: 5.6 }] });
   wall([4.05, 4.4], [4.05, 6.6], T, HT, [], 'center', 'tabique_hab3_bano', { R: [BATH] });
